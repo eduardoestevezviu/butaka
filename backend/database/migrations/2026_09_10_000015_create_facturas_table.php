@@ -15,7 +15,7 @@ return new class extends Migration {
       // Numero correlativo legal, distinto del identificador interno
       $table->string('numero_factura', 20)->unique();
 
-      $table->integer('id_tipo_factura');
+      $table->unsignedInteger('id_tipo_factura');
 
       // Destinatario de la factura, asistente en las de compra y organizador en las de liquidacion
       $table->uuid('id_usuario');
