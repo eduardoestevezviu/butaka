@@ -10,7 +10,7 @@ return new class extends Migration {
    */
   public function up(): void {
     Schema::create('estado_carritos', function (Blueprint $table) {
-      $table->integer('id_estado_carrito')->primary();
+      $table->increments('id_estado_carrito');
       $table->enum('estado_carrito', ['Activo', 'Convertido'])->unique();
       $table->timestamps();
       $table->softDeletes();

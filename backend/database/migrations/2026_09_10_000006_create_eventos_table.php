@@ -23,10 +23,10 @@ return new class extends Migration {
       // Organizador propietario del evento
       $table->uuid('id_usuario');
 
-      $table->integer('id_categoria');
+      $table->unsignedInteger('id_categoria');
 
       // Todo evento nace publicado y solo puede pasar a cancelado
-      $table->integer('id_estado_evento')->default(1);
+      $table->unsignedInteger('id_estado_evento')->default(1);
 
       $table->timestamps();
       $table->softDeletes();

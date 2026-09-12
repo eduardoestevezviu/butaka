@@ -16,7 +16,7 @@ return new class extends Migration {
       $table->uuid('id_usuario');
 
       // Toda compra nace pendiente de pago
-      $table->integer('id_estado_pago')->default(1);
+      $table->unsignedInteger('id_estado_pago')->default(1);
 
       // Importe realmente abonado, ya descontado el canje de puntos
       $table->decimal('importe_total', 8, 2);

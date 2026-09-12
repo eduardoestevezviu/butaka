@@ -10,7 +10,7 @@ return new class extends Migration {
    */
   public function up(): void {
     Schema::create('categorias', function (Blueprint $table) {
-      $table->integer('id_categoria')->primary();
+      $table->increments('id_categoria');
       $table->enum('categoria', ['Música', 'Teatro', 'Danza', 'Exposiciones', 'Cursos y talleres', 'Familiar', 'Otros'])->unique();
       $table->timestamps();
       $table->softDeletes();

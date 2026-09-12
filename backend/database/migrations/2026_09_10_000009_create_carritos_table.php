@@ -16,7 +16,7 @@ return new class extends Migration {
       $table->uuid('id_usuario');
 
       // Todo carrito nace activo y pasa a convertido al generarse la compra
-      $table->integer('id_estado_carrito')->default(1);
+      $table->unsignedInteger('id_estado_carrito')->default(1);
 
       $table->timestamps();
       $table->softDeletes();

@@ -10,7 +10,7 @@ return new class extends Migration {
    */
   public function up(): void {
     Schema::create('tipo_facturas', function (Blueprint $table) {
-      $table->integer('id_tipo_factura')->primary();
+      $table->increments('id_tipo_factura');
       $table->enum('tipo_factura', ['Compra', 'Liquidación'])->unique();
       $table->timestamps();
       $table->softDeletes();

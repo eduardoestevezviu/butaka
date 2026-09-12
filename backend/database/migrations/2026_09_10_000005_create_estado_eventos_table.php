@@ -10,7 +10,7 @@ return new class extends Migration {
    */
   public function up(): void {
     Schema::create('estado_eventos', function (Blueprint $table) {
-      $table->integer('id_estado_evento')->primary();
+      $table->increments('id_estado_evento');
       $table->enum('estado_evento', ['Publicado', 'Cancelado'])->unique();
       $table->timestamps();
       $table->softDeletes();

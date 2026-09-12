@@ -10,7 +10,7 @@ return new class extends Migration {
    */
   public function up(): void {
     Schema::create('estado_pagos', function (Blueprint $table) {
-      $table->integer('id_estado_pago')->primary();
+      $table->increments('id_estado_pago');
       $table->enum('estado_pago', ['Pendiente', 'Completado', 'Reembolsado'])->unique();
       $table->timestamps();
       $table->softDeletes();
