@@ -13,6 +13,9 @@ return new class extends Migration {
       // La clave primaria es a su vez foranea, al tratarse de un subtipo de usuario
       $table->uuid('id_usuario')->primary();
 
+      // Nombre con el que el organizador aparece publicamente en el catalogo
+      $table->string('nombre_comercial', 150)->unique();
+
       // Datos fiscales necesarios para emitir las liquidaciones al organizador
       $table->string('nif', 9)->unique();
       $table->string('iban', 34);
