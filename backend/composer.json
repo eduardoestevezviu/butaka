@@ -10,7 +10,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
-        "awobaz/compoships": "^3.1",
         "laravel/framework": "^13.17",
         "laravel/passport": "^13.8",
         "laravel/tinker": "^3.0",

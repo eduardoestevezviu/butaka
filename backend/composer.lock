@@ -4,72 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "22de4d43b8ed14a7d5d535f87bff6fba",
+    "content-hash": "6775e9c115b24936952f7e86a1d5548e",
     "packages": [
-        {
-            "name": "awobaz/compoships",
-            "version": "3.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/topclaudy/compoships.git",
-                "reference": "c28228355edb36e52171a99252c7c2b28b8a4e8c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/topclaudy/compoships/zipball/c28228355edb36e52171a99252c7c2b28b8a4e8c",
-                "reference": "c28228355edb36e52171a99252c7c2b28b8a4e8c",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/database": "^12.0|^13.0",
-                "php": "^8.2"
-            },
-            "require-dev": {
-                "ext-sqlite3": "*",
-                "fakerphp/faker": "^1.18",
-                "illuminate/queue": "^12.0|^13.0",
-                "phpunit/phpunit": "^11.0|^12.0"
-            },
-            "suggest": {
-                "awobaz/blade-active": "Blade directives for the Laravel 'Active' package",
-                "awobaz/eloquent-auto-append": "Automatically append accessors to model serialization",
-                "awobaz/eloquent-mutators": "Reusable mutators (getters/setters) for Laravel 5's Eloquent",
-                "awobaz/syntactic": "Syntactic sugar for named and indexed parameters call."
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Awobaz\\Compoships\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Claudin J. Daniel",
-                    "email": "cdaniel@awobaz.com"
-                }
-            ],
-            "description": "Laravel relationships with support for composite/multiple keys",
-            "keywords": [
-                "laravel",
-                "laravel composite keys",
-                "laravel relationships"
-            ],
-            "support": {
-                "issues": "https://github.com/topclaudy/compoships/issues",
-                "source": "https://github.com/topclaudy/compoships/tree/3.1.0"
-            },
-            "funding": [
-                {
-                    "url": "https://paypal.me/awobaz",
-                    "type": "custom"
-                }
-            ],
-            "time": "2026-08-19T12:36:48+00:00"
-        },
         {
             "name": "brick/math",
             "version": "0.18.0",

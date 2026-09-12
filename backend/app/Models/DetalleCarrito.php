@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Awobaz\Compoships\Compoships;
 
 class DetalleCarrito extends Model {
-  use SoftDeletes, Compoships;
+  use SoftDeletes;
 
   protected $table = 'detalle_carritos';
   protected $primaryKey = null;
