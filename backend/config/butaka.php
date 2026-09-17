@@ -15,4 +15,47 @@ return [
   'compras_por_pagina' => 5,
   'facturas_por_pagina' => 5,
 
+  /*
+  |--------------------------------------------------------------------------
+  | Límite de compra
+  |--------------------------------------------------------------------------
+  |
+  | Número máximo de entradas que un asistente puede adquirir de un mismo
+  | evento, para favorecer el acceso del público frente a la compra masiva.
+  |
+  */
+
+  'max_entradas_por_evento' => 6,
+
+  /*
+  |--------------------------------------------------------------------------
+  | Fidelización
+  |--------------------------------------------------------------------------
+  |
+  | El asistente gana un punto por cada euro abonado y necesita veinte puntos
+  | para descontar un euro, lo que supone un retorno del 5%.
+  |
+  */
+
+  'puntos_por_euro' => 1,
+  'puntos_por_euro_canje' => 20,
+  'min_puntos_canje' => 100,
+  'max_porcentaje_canje' => 50,
+
+  /*
+  |--------------------------------------------------------------------------
+  | Facturación
+  |--------------------------------------------------------------------------
+  |
+  | Porcentaje que Butaka retiene de cada venta y tipos de IVA aplicables. El
+  | reducido corresponde a los espectáculos culturales en vivo que se facturan
+  | al asistente, y el general al servicio de intermediación que se liquida al
+  | organizador.
+  |
+  */
+
+  'comision' => env('BUTAKA_COMISION', 10),
+  'iva_entradas' => 10,
+  'iva_comision' => 21,
+
 ];

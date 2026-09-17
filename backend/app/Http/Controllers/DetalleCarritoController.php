@@ -2,64 +2,142 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Carrito;
 use App\Models\DetalleCarrito;
+use App\Models\EstadoCarrito;
+use App\Models\TipoEntrada;
+use App\Http\Responses\ResultResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
-class DetalleCarritoController extends Controller
-{
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+class DetalleCarritoController extends Controller {
+
+  // Devuelve el carrito activo del asistente autenticado con sus líneas
+  public function carrito(Request $request): JsonResponse {
+    $result = new ResultResponse();
+    try {
+      $carrito = $this->buscarCarritoActivo($request->user()->id_usuario);
+
+      if ($carrito) {
+        $carrito->load([
+          'detalleCarritos.tipoEntrada:id_tipo_entrada,nombre,precio,oferta,aforo,vendidas,id_evento',
+          'detalleCarritos.tipoEntrada.evento:id_evento,nombre,fecha,imagen',
+        ]);
+      }
+
+      $result->setStatusCode(ResultResponse::HTTP_OK);
+      $result->setMessage(ResultResponse::MSG_OK);
+      $result->setData($carrito);
+    } catch (\Exception $e) {
+      $result->setStatusCode(ResultResponse::HTTP_ERROR);
+      $result->setMessage(ResultResponse::MSG_ERROR);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+    return $result->toResponse();
+  }
+
+  public function agregarEntrada(Request $request): JsonResponse {
+    $result = new ResultResponse();
+    try {
+      $datos = $this->validarDetalleCarrito($request);
+      $idUsuario = $request->user()->id_usuario;
+
+      $tipoEntrada = TipoEntrada::findOrFail($datos['id_tipo_entrada']);
+
+      // No tiene sentido reservar en el carrito más entradas de las que quedan
+      if ($datos['cantidad'] > ($tipoEntrada->aforo - $tipoEntrada->vendidas)) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('No hay entradas suficientes disponibles');
+        return $result->toResponse();
+      }
+
+      // Si el asistente no tiene carrito activo se le crea uno
+      $carrito = $this->buscarCarritoActivo($idUsuario) ?? Carrito::create(['id_usuario' => $idUsuario]);
+
+      // Se realiza así por la clave compuesta, no se puede usar updateOrCreate
+      $detalle = DetalleCarrito::where('id_carrito', $carrito->id_carrito)
+        ->where('id_tipo_entrada', $datos['id_tipo_entrada'])
+        ->first();
+
+      if ($detalle) {
+        DetalleCarrito::where('id_carrito', $carrito->id_carrito)
+          ->where('id_tipo_entrada', $datos['id_tipo_entrada'])
+          ->update([
+            'cantidad' => $datos['cantidad'],
+            'precio_unitario' => $tipoEntrada->precio,
+          ]);
+      } else {
+        DetalleCarrito::create([
+          'id_carrito' => $carrito->id_carrito,
+          'id_tipo_entrada' => $datos['id_tipo_entrada'],
+          'cantidad' => $datos['cantidad'],
+          'precio_unitario' => $tipoEntrada->precio,
+        ]);
+      }
+
+      $carrito->load('detalleCarritos.tipoEntrada.evento:id_evento,nombre,fecha,imagen');
+
+      $result->setStatusCode(ResultResponse::HTTP_OK);
+      $result->setMessage(ResultResponse::MSG_OK);
+      $result->setData($carrito);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+      $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+      $result->setMessage(ResultResponse::MSG_VALIDATION_ERROR);
+      $result->setData($e->errors());
+    } catch (\Exception $e) {
+      $result->setStatusCode(ResultResponse::HTTP_ERROR);
+      $result->setMessage(ResultResponse::MSG_ERROR);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+    return $result->toResponse();
+  }
+
+  public function destroy(Request $request, TipoEntrada $tipoEntrada): JsonResponse {
+    $result = new ResultResponse();
+    try {
+      $carrito = $this->buscarCarritoActivo($request->user()->id_usuario);
+
+      if (!$carrito) {
+        $result->setStatusCode(ResultResponse::HTTP_NOT_FOUND);
+        $result->setMessage(ResultResponse::MSG_NOT_FOUND);
+        return $result->toResponse();
+      }
+
+      DetalleCarrito::where('id_carrito', $carrito->id_carrito)
+        ->where('id_tipo_entrada', $tipoEntrada->id_tipo_entrada)
+        ->delete();
+
+      // Si el carrito se queda sin líneas se elimina también
+      $this->eliminarCarritoSiVacio($carrito);
+
+      $result->setStatusCode(ResultResponse::HTTP_OK);
+      $result->setMessage(ResultResponse::MSG_DELETED);
+    } catch (\Exception $e) {
+      $result->setStatusCode(ResultResponse::HTTP_ERROR);
+      $result->setMessage(ResultResponse::MSG_ERROR);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(DetalleCarrito $detalleCarrito)
-    {
-        //
-    }
+    return $result->toResponse();
+  }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(DetalleCarrito $detalleCarrito)
-    {
-        //
-    }
+  // Localiza el único carrito en estado activo del asistente
+  private function buscarCarritoActivo(string $idUsuario) {
+    return Carrito::where('id_usuario', $idUsuario)
+      ->where('id_estado_carrito', EstadoCarrito::ESTADO_ACTIVO)
+      ->first();
+  }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, DetalleCarrito $detalleCarrito)
-    {
-        //
+  // Elimina el carrito cuando ya no le queda ninguna linea
+  private function eliminarCarritoSiVacio(Carrito $carrito): void {
+    if ($carrito->detalleCarritos()->count() === 0) {
+      $carrito->delete();
     }
+  }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(DetalleCarrito $detalleCarrito)
-    {
-        //
-    }
+  private function validarDetalleCarrito(Request $request) {
+    return $request->validate([
+      'id_tipo_entrada' => 'required|exists:tipo_entradas,id_tipo_entrada',
+      'cantidad' => 'required|integer|min:1',
+    ]);
+  }
 }
