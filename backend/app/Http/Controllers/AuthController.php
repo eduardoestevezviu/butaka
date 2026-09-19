@@ -119,8 +119,9 @@ class AuthController extends Controller {
 
   // El token lleva como scopes todos los roles del usuario, porque en Butaka una
   // misma persona puede ser asistente y organizador a la vez. Emitir un único
-  // scope obligaría a cerrar sesión para cambiar de faceta
-  private function emitirToken(Usuario $usuario): string {
+  // scope obligaría a cerrar sesión para cambiar de faceta.
+  // Es público porque el UsuarioController lo invoca al hacerse organizador
+  public function emitirToken(Usuario $usuario): string {
     $roles = $usuario->getRoleNames()->toArray();
 
     if (empty($roles)) {

@@ -30,11 +30,16 @@ class UsuarioController extends Controller {
 
       $datos['password'] = Hash::make($datos['password']);
 
-      // Todo usuario nace como asistente, por lo que ambas filas se crean juntas
+      // Todo usuario nace como asistente, por lo que ambas filas se crean juntas.
+      // El rol entra en la misma transacción para que nadie quede registrado sin
+      // rol si la asignación falla, lo que le dejaría un token sin permisos
       $usuario = DB::transaction(function () use ($datos) {
         $usuario = Usuario::create($datos);
 
         Asistente::create(['id_usuario' => $usuario->id_usuario]);
+
+        // El guard toma el que hay por defecto en config/auth.php, que es api
+        $usuario->assignRole('asistente');
 
         return $usuario;
       });
@@ -132,11 +137,30 @@ class UsuarioController extends Controller {
       $datos = $this->validarOrganizador($request);
       $datos['id_usuario'] = $usuario->id_usuario;
 
-      Organizador::create($datos);
+      // La fila de organizador y el rol nacen juntos, igual que en el alta
+      DB::transaction(function () use ($datos, $usuario) {
+        Organizador::create($datos);
+
+        $usuario->assignRole('organizador');
+      });
+
+      // Los scopes se congelan al emitir el token, así que todos los que estén
+      // en circulación siguen sin el de organizador y darían un 403 al publicar
+      // un evento. Se revocan todos y se entrega uno nuevo con ambos scopes, que
+      // es el mismo criterio que aplica cualquier web al cambiar la contraseña.
+      // Revocar antes de crear, para no anular el que se acaba de emitir
+      $usuario->tokens()->update(['revoked' => true]);
+
+      $usuario->refresh();
+      $token = app(AuthController::class)->emitirToken($usuario);
 
       $result->setStatusCode(ResultResponse::HTTP_CREATED);
-      $result->setMessage(ResultResponse::MSG_CREATED);
-      $result->setData($usuario->load('asistente', 'organizador'));
+      $result->setMessage('Ya puede publicar eventos. Por seguridad se han cerrado sus otras sesiones');
+      $result->setData([
+        'usuario' => $usuario->load('asistente', 'organizador'),
+        'token' => $token,
+        'token_type' => 'Bearer',
+      ]);
     } catch (\Illuminate\Validation\ValidationException $e) {
       $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
       $result->setMessage(ResultResponse::MSG_VALIDATION_ERROR);

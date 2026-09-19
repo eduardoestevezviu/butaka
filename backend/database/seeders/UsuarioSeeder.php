@@ -6,6 +6,8 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Models\Usuario;
+use Spatie\Permission\Models\Role;
 
 class UsuarioSeeder extends Seeder {
   public function run(): void {
@@ -148,5 +150,17 @@ class UsuarioSeeder extends Seeder {
     ];
 
     DB::table('organizadores')->insert($organizadores);
+
+    // Los roles se asignan con Eloquent, ya que Spatie escribe en su propia
+    // tabla intermedia y no basta con insertar en usuarios
+    $rolAsistente = Role::findByName('asistente', 'api');
+    $rolOrganizador = Role::findByName('organizador', 'api');
+
+    Usuario::all()->each->assignRole($rolAsistente);
+
+    Usuario::whereIn('id_usuario', [$alba, $ignacio, $candelaria, $hector])
+      ->get()
+      ->each
+      ->assignRole($rolOrganizador);
   }
 }
