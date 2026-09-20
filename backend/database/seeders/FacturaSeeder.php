@@ -14,7 +14,7 @@ class FacturaSeeder extends Seeder {
     // Comprobantes al asistente, con el IVA reducido del 10% de los espectaculos en vivo
     $facturas = [
       [
-        'numero_factura' => 'C-2026-0001',
+        'numero_factura' => 'C-20260702-0001',
         'id_tipo_factura' => 1,
         'id_usuario' => $u['lucia@asistente.com'],
         'fecha_emision' => '2026-07-02',
@@ -27,7 +27,7 @@ class FacturaSeeder extends Seeder {
         'comision' => null,
       ],
       [
-        'numero_factura' => 'C-2026-0002',
+        'numero_factura' => 'C-20260803-0001',
         'id_tipo_factura' => 1,
         'id_usuario' => $u['marcos@asistente.com'],
         'fecha_emision' => '2026-08-03',
@@ -40,7 +40,7 @@ class FacturaSeeder extends Seeder {
         'comision' => null,
       ],
       [
-        'numero_factura' => 'C-2026-0003',
+        'numero_factura' => 'C-20260811-0001',
         'id_tipo_factura' => 1,
         'id_usuario' => $u['lucia@asistente.com'],
         'fecha_emision' => '2026-08-11',
@@ -53,7 +53,7 @@ class FacturaSeeder extends Seeder {
         'comision' => null,
       ],
       [
-        'numero_factura' => 'C-2026-0004',
+        'numero_factura' => 'C-20260820-0001',
         'id_tipo_factura' => 1,
         'id_usuario' => $u['marcos@asistente.com'],
         'fecha_emision' => '2026-08-20',
@@ -66,7 +66,7 @@ class FacturaSeeder extends Seeder {
         'comision' => null,
       ],
       [
-        'numero_factura' => 'C-2026-0005',
+        'numero_factura' => 'C-20260828-0001',
         'id_tipo_factura' => 1,
         'id_usuario' => $u['lucia@asistente.com'],
         'fecha_emision' => '2026-08-28',
@@ -79,7 +79,7 @@ class FacturaSeeder extends Seeder {
         'comision' => null,
       ],
       [
-        'numero_factura' => 'C-2026-0006',
+        'numero_factura' => 'C-20260901-0001',
         'id_tipo_factura' => 1,
         'id_usuario' => $u['lucia@asistente.com'],
         'fecha_emision' => '2026-09-01',
@@ -92,7 +92,7 @@ class FacturaSeeder extends Seeder {
         'comision' => null,
       ],
       [
-        'numero_factura' => 'C-2026-0007',
+        'numero_factura' => 'C-20260905-0001',
         'id_tipo_factura' => 1,
         'id_usuario' => $u['lucia@asistente.com'],
         'fecha_emision' => '2026-09-05',
@@ -105,7 +105,7 @@ class FacturaSeeder extends Seeder {
         'comision' => null,
       ],
       [
-        'numero_factura' => 'C-2026-0008',
+        'numero_factura' => 'C-20260906-0001',
         'id_tipo_factura' => 1,
         'id_usuario' => $u['marcos@asistente.com'],
         'fecha_emision' => '2026-09-06',
@@ -120,7 +120,7 @@ class FacturaSeeder extends Seeder {
       // Liquidacion del unico evento ya celebrado, con 72 euros recaudados
       // La comision del 10% son 7,20 euros de base, mas el 21% de IVA del servicio
       [
-        'numero_factura' => 'L-2026-0001',
+        'numero_factura' => 'L-20260720-0001',
         'id_tipo_factura' => 2,
         'id_usuario' => $u['alba@salatimple.com'],
         'fecha_emision' => '2026-07-20',
