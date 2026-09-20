@@ -25,6 +25,11 @@ class Evento extends Model {
     'id_estado_evento',
   ];
 
+  // El borrado lógico es un detalle interno, no se publica en la API
+  protected $hidden = [
+    'deleted_at',
+  ];
+
   public function getRouteKeyName(): string {
     return 'id_evento';
   }

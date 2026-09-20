@@ -17,6 +17,13 @@ class CategoriaSeeder extends Seeder {
       ['id_categoria' => 7, 'categoria' => 'Otros'],
     ];
 
+    // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,
+    // de modo que se añaden a mano para no dejar filas sin fecha de alta
+    foreach ($registros as $indice => $fila) {
+      $registros[$indice]['created_at'] = now();
+      $registros[$indice]['updated_at'] = now();
+    }
+
     DB::table('categorias')->insert($registros);
   }
 }

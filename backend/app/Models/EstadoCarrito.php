@@ -20,6 +20,11 @@ class EstadoCarrito extends Model {
     'estado_carrito',
   ];
 
+  // El borrado lógico es un detalle interno, no se publica en la API
+  protected $hidden = [
+    'deleted_at',
+  ];
+
   public function carritos() {
     return $this->hasMany(Carrito::class, 'id_estado_carrito', 'id_estado_carrito');
   }

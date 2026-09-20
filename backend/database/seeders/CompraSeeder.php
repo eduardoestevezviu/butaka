@@ -96,6 +96,13 @@ class CompraSeeder extends Seeder {
       ],
     ];
 
+    // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,
+    // de modo que se añaden a mano para no dejar filas sin fecha de alta
+    foreach ($compras as $indice => $fila) {
+      $compras[$indice]['created_at'] = now();
+      $compras[$indice]['updated_at'] = now();
+    }
+
     DB::table('compras')->insert($compras);
   }
 }

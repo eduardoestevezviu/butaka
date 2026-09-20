@@ -54,6 +54,8 @@ class TipoEntradaSeeder extends Seeder {
         'aforo' => $tipo['aforo'],
         'vendidas' => $tipo['vendidas'],
         'id_evento' => $e[$tipo['evento']],
+        'created_at' => now(),
+        'updated_at' => now(),
       ]);
     }
   }

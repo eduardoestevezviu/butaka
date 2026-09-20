@@ -131,6 +131,13 @@ class EventoSeeder extends Seeder {
 
     foreach ($eventos as $evento) {
       $evento['id_evento'] = (string) Str::uuid();
+      // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,
+      // de modo que se añaden a mano para no dejar filas sin fecha de alta
+      foreach ($evento as $indice => $fila) {
+        $evento[$indice]['created_at'] = now();
+        $evento[$indice]['updated_at'] = now();
+      }
+
       DB::table('eventos')->insert($evento);
     }
   }

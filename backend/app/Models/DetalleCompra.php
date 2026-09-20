@@ -19,6 +19,11 @@ class DetalleCompra extends Model {
     'precio_unitario',
   ];
 
+  // El borrado lógico es un detalle interno, no se publica en la API
+  protected $hidden = [
+    'deleted_at',
+  ];
+
   public function compra() {
     return $this->belongsTo(Compra::class, 'id_compra', 'id_compra');
   }

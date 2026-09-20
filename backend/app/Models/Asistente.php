@@ -18,6 +18,11 @@ class Asistente extends Model {
     'puntos',
   ];
 
+  // El borrado lógico es un detalle interno, no se publica en la API
+  protected $hidden = [
+    'deleted_at',
+  ];
+
   public function getRouteKeyName(): string {
     return 'id_usuario';
   }

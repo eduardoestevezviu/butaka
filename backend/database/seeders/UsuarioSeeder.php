@@ -106,6 +106,13 @@ class UsuarioSeeder extends Seeder {
       ],
     ];
 
+    // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,
+    // de modo que se añaden a mano para no dejar filas sin fecha de alta
+    foreach ($usuarios as $indice => $fila) {
+      $usuarios[$indice]['created_at'] = now();
+      $usuarios[$indice]['updated_at'] = now();
+    }
+
     DB::table('usuarios')->insert($usuarios);
 
     // Todo usuario es asistente, ya que cualquiera puede comprar entradas
@@ -118,6 +125,13 @@ class UsuarioSeeder extends Seeder {
       ['id_usuario' => $marcos, 'puntos' => 35],
       ['id_usuario' => $nerea, 'puntos' => 0],
     ];
+
+    // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,
+    // de modo que se añaden a mano para no dejar filas sin fecha de alta
+    foreach ($asistentes as $indice => $fila) {
+      $asistentes[$indice]['created_at'] = now();
+      $asistentes[$indice]['updated_at'] = now();
+    }
 
     DB::table('asistentes')->insert($asistentes);
 
@@ -148,6 +162,13 @@ class UsuarioSeeder extends Seeder {
         'iban' => 'ES1000492352082414205416',
       ],
     ];
+
+    // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,
+    // de modo que se añaden a mano para no dejar filas sin fecha de alta
+    foreach ($organizadores as $indice => $fila) {
+      $organizadores[$indice]['created_at'] = now();
+      $organizadores[$indice]['updated_at'] = now();
+    }
 
     DB::table('organizadores')->insert($organizadores);
 

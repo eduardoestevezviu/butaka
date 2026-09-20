@@ -20,6 +20,11 @@ class EstadoEvento extends Model {
     'estado_evento',
   ];
 
+  // El borrado lógico es un detalle interno, no se publica en la API
+  protected $hidden = [
+    'deleted_at',
+  ];
+
   public function eventos() {
     return $this->hasMany(Evento::class, 'id_estado_evento', 'id_estado_evento');
   }

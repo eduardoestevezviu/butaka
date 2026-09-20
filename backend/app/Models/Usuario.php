@@ -31,6 +31,7 @@ class Usuario extends Authenticatable implements OAuthenticatable {
   ];
 
   protected $hidden = [
+    'deleted_at',
     'password',
   ];
 

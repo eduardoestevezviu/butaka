@@ -18,6 +18,13 @@ class CarritoSeeder extends Seeder {
 
     foreach ($carritos as $carrito) {
       $carrito['id_carrito'] = (string) Str::uuid();
+      // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,
+      // de modo que se añaden a mano para no dejar filas sin fecha de alta
+      foreach ($carrito as $indice => $fila) {
+        $carrito[$indice]['created_at'] = now();
+        $carrito[$indice]['updated_at'] = now();
+      }
+
       DB::table('carritos')->insert($carrito);
     }
   }

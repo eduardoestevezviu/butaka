@@ -40,6 +40,13 @@ class DetalleCarritoSeeder extends Seeder {
       ],
     ];
 
+    // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,
+    // de modo que se añaden a mano para no dejar filas sin fecha de alta
+    foreach ($detalles as $indice => $fila) {
+      $detalles[$indice]['created_at'] = now();
+      $detalles[$indice]['updated_at'] = now();
+    }
+
     DB::table('detalle_carritos')->insert($detalles);
   }
 }

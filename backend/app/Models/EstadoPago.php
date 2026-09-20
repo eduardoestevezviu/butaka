@@ -21,6 +21,11 @@ class EstadoPago extends Model {
     'estado_pago',
   ];
 
+  // El borrado lógico es un detalle interno, no se publica en la API
+  protected $hidden = [
+    'deleted_at',
+  ];
+
   public function compras() {
     return $this->hasMany(Compra::class, 'id_estado_pago', 'id_estado_pago');
   }

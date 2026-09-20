@@ -24,6 +24,11 @@ class Compra extends Model {
     'session_id',
   ];
 
+  // El borrado lógico es un detalle interno, no se publica en la API
+  protected $hidden = [
+    'deleted_at',
+  ];
+
   public function getRouteKeyName(): string {
     return 'id_compra';
   }

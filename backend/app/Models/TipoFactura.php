@@ -20,6 +20,11 @@ class TipoFactura extends Model {
     'tipo_factura',
   ];
 
+  // El borrado lógico es un detalle interno, no se publica en la API
+  protected $hidden = [
+    'deleted_at',
+  ];
+
   public function facturas() {
     return $this->hasMany(Factura::class, 'id_tipo_factura', 'id_tipo_factura');
   }

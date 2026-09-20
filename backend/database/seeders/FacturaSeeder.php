@@ -134,6 +134,13 @@ class FacturaSeeder extends Seeder {
       ],
     ];
 
+    // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,
+    // de modo que se añaden a mano para no dejar filas sin fecha de alta
+    foreach ($facturas as $indice => $fila) {
+      $facturas[$indice]['created_at'] = now();
+      $facturas[$indice]['updated_at'] = now();
+    }
+
     DB::table('facturas')->insert($facturas);
   }
 }

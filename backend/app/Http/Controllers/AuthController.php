@@ -128,6 +128,11 @@ class AuthController extends Controller {
       $roles = [self::ROL_POR_DEFECTO];
     }
 
+    // getRoleNames() carga la relación para leer los nombres, y si se deja cargada
+    // viaja entera en la respuesta con su tabla intermedia. El frontend sabe si
+    // alguien es organizador mirando si la relación organizador viene rellena
+    $usuario->unsetRelation('roles');
+
     return $usuario->createToken('authToken', $roles)->accessToken;
   }
 }
