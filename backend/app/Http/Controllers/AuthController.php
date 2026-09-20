@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\WelcomeMail;
 use App\Models\Usuario;
 use App\Http\Responses\ResultResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller {
 
@@ -29,6 +31,14 @@ class AuthController extends Controller {
 
       $usuario = Usuario::where('email', $request->email)->first();
       $token = $this->emitirToken($usuario);
+
+      // El correo va en su propio try, porque un fallo del servidor de correo no
+      // debe tumbar un alta que ya está hecha. El usuario existe y tiene su token
+      try {
+        Mail::to($usuario->email)->send(new WelcomeMail($usuario));
+      } catch (\Exception $e) {
+        // El registro es válido aunque la bienvenida no salga
+      }
 
       $result->setStatusCode(ResultResponse::HTTP_CREATED);
       $result->setMessage('Usuario registrado exitosamente');

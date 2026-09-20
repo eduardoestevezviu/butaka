@@ -58,4 +58,16 @@ return [
   'iva_entradas' => 10,
   'iva_comision' => 21,
 
+  /*
+  |--------------------------------------------------------------------------
+  | Frontend
+  |--------------------------------------------------------------------------
+  |
+  | Dirección de la aplicación de Angular. La usan los enlaces de los correos y
+  | las URL de retorno de la pasarela de pago.
+  |
+  */
+
+  'frontend_url' => env('FRONTEND_URL', 'http://localhost:4200'),
+
 ];
