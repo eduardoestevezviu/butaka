@@ -22,19 +22,19 @@ class DetalleCarritoSeeder extends Seeder {
     $detalles = [
       [
         'id_carrito' => $carritoLucia,
-        'id_tipo_entrada' => $t['Raices: danza contemporanea - General'],
+        'id_tipo_entrada' => $t['Raíces: danza contemporánea - General'],
         'cantidad' => 2,
         'precio_unitario' => 22.00,
       ],
       [
         'id_carrito' => $carritoLucia,
-        'id_tipo_entrada' => $t['Feria de artesania y musica de barrio - Entrada general'],
+        'id_tipo_entrada' => $t['Feria de artesanía y música de barrio - Entrada general'],
         'cantidad' => 3,
         'precio_unitario' => 3.00,
       ],
       [
         'id_carrito' => $carritoMarcos,
-        'id_tipo_entrada' => $t['Miradas del Atlantico - Entrada general'],
+        'id_tipo_entrada' => $t['Miradas del Atlántico - Entrada general'],
         'cantidad' => 2,
         'precio_unitario' => 5.00,
       ],
