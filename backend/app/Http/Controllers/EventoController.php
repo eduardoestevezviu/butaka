@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DetalleCompra;
+use App\Models\EstadoPago;
 use App\Models\Evento;
 use App\Models\EstadoEvento;
 use App\Models\TipoEntrada;
@@ -82,6 +84,83 @@ class EventoController extends Controller {
       $result->setStatusCode(ResultResponse::HTTP_OK);
       $result->setMessage(ResultResponse::MSG_OK);
       $result->setData($eventos);
+    } catch (\Exception $e) {
+      $result->setStatusCode(ResultResponse::HTTP_ERROR);
+      $result->setMessage(ResultResponse::MSG_ERROR);
+    }
+
+    return $result->toResponse();
+  }
+
+  // Ventas de un evento del organizador, desglosadas por tipo de entrada
+  public function ventas(Request $request, Evento $evento): JsonResponse {
+    $result = new ResultResponse();
+    try {
+      // Un organizador solo puede consultar las ventas de sus propios eventos
+      if (!$this->esPropietario($request, $evento)) {
+        $result->setStatusCode(ResultResponse::HTTP_FORBIDDEN);
+        $result->setMessage(ResultResponse::MSG_FORBIDDEN);
+        return $result->toResponse();
+      }
+
+      $evento->load('tipoEntradas');
+
+      $modalidades = [];
+      $totales = [
+        'aforo' => 0,
+        'vendidas' => 0,
+        'pendientes' => 0,
+        'disponibles' => 0,
+        'recaudacion' => 0,
+      ];
+
+      foreach ($evento->tipoEntradas as $tipo) {
+        // Solo las compras pagadas son dinero real. Las pendientes tienen el
+        // aforo reservado, pero todavía pueden no llegar a pagarse
+        $vendidas = 0;
+        $recaudacion = 0;
+        foreach ($this->lineasDeCompra($tipo, EstadoPago::ESTADO_COMPLETADO) as $linea) {
+          $vendidas = $vendidas + $linea->cantidad;
+          $recaudacion = $recaudacion + ($linea->cantidad * $linea->precio_unitario);
+        }
+
+        $pendientes = 0;
+        foreach ($this->lineasDeCompra($tipo, EstadoPago::ESTADO_PENDIENTE) as $linea) {
+          $pendientes = $pendientes + $linea->cantidad;
+        }
+
+        // Lo disponible sale del contador de la modalidad, que es el mismo que
+        // consulta la compra, para que esta pantalla y el catálogo coincidan
+        $disponibles = $tipo->aforo - $tipo->vendidas;
+
+        $modalidades[] = [
+          'id_tipo_entrada' => $tipo->id_tipo_entrada,
+          'nombre' => $tipo->nombre,
+          'aforo' => $tipo->aforo,
+          'vendidas' => $vendidas,
+          'pendientes' => $pendientes,
+          'disponibles' => $disponibles,
+          'recaudacion' => round($recaudacion, 2),
+        ];
+
+        $totales['aforo'] = $totales['aforo'] + $tipo->aforo;
+        $totales['vendidas'] = $totales['vendidas'] + $vendidas;
+        $totales['pendientes'] = $totales['pendientes'] + $pendientes;
+        $totales['disponibles'] = $totales['disponibles'] + $disponibles;
+        $totales['recaudacion'] = $totales['recaudacion'] + $recaudacion;
+      }
+
+      $totales['recaudacion'] = round($totales['recaudacion'], 2);
+
+      $result->setStatusCode(ResultResponse::HTTP_OK);
+      $result->setMessage(ResultResponse::MSG_OK);
+      $result->setData([
+        'id_evento' => $evento->id_evento,
+        'nombre' => $evento->nombre,
+        'fecha' => $evento->fecha,
+        'modalidades' => $modalidades,
+        'totales' => $totales,
+      ]);
     } catch (\Exception $e) {
       $result->setStatusCode(ResultResponse::HTTP_ERROR);
       $result->setMessage(ResultResponse::MSG_ERROR);
@@ -221,6 +300,15 @@ class EventoController extends Controller {
   }
 
   // Comprueba que el evento pertenece al organizador que realiza la petición
+  // Líneas de compra de un tipo de entrada cuya compra está en el estado indicado
+  private function lineasDeCompra(TipoEntrada $tipo, int $estado) {
+    return DetalleCompra::where('id_tipo_entrada', $tipo->id_tipo_entrada)
+      ->whereHas('compra', function ($consulta) use ($estado) {
+        $consulta->where('id_estado_pago', $estado);
+      })
+      ->get();
+  }
+
   private function esPropietario(Request $request, Evento $evento): bool {
     return $evento->id_usuario === $request->user()->id_usuario;
   }

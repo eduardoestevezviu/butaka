@@ -43,6 +43,9 @@ Route::middleware(['auth:api', CheckToken::using('organizador')])->group(functio
   // GET /api/organizador/eventos - Listar los eventos del organizador para su panel
   Route::get('/organizador/eventos', [EventoController::class, 'misEventos']);
 
+  // GET /api/organizador/eventos/{id}/ventas - Entradas vendidas y recaudación de un evento
+  Route::get('/organizador/eventos/{evento}/ventas', [EventoController::class, 'ventas']);
+
 
   /**
    * RUTAS TIPOS DE ENTRADA
