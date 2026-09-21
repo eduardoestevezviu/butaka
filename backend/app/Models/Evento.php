@@ -30,8 +30,28 @@ class Evento extends Model {
     'deleted_at',
   ];
 
+  // La dirección completa de la imagen viaja siempre en la respuesta, para que el
+  // frontend no tenga que saber dónde se alojan las imágenes
+  protected $appends = [
+    'imagen_url',
+  ];
+
   public function getRouteKeyName(): string {
     return 'id_evento';
+  }
+
+  // Las imágenes propias se guardan como ruta relativa y se sirven desde public/
+  // del backend, mientras que las que aporta el organizador ya son una URL
+  public function getImagenUrlAttribute(): ?string {
+    if ($this->imagen === null) {
+      return null;
+    }
+
+    if (str_starts_with($this->imagen, 'http')) {
+      return $this->imagen;
+    }
+
+    return asset($this->imagen);
   }
 
   // Se utiliza para generar un UUID automáticamente al crear un nuevo evento
