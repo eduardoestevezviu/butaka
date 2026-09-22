@@ -1399,7 +1399,19 @@
           "protocolProfileBehavior": {
             "disableBodyPruning": true
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.collectionVariables.set(\"id_evento_propio\", res.data.data[0].id_evento);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Crear evento",
@@ -1779,6 +1791,254 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Ventas de un evento",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizador/eventos/{{id_evento_propio}}/ventas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "eventos",
+                "{{id_evento_propio}}",
+                "ventas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ventas de evento ajeno (403)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizador/eventos/{{id_evento}}/ventas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "eventos",
+                "{{id_evento}}",
+                "ventas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ventas con token de asistente (403)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizador/eventos/{{id_evento_propio}}/ventas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "eventos",
+                "{{id_evento_propio}}",
+                "ventas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Facturación",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizador/facturacion",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "facturacion"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.collectionVariables.set(\"id_evento_liquidado\", res.data.liquidaciones[0].evento.id_evento);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Facturación filtrada por evento",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizador/facturacion?evento={{id_evento_liquidado}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "facturacion"
+              ],
+              "query": [
+                {
+                  "key": "evento",
+                  "value": "{{id_evento_liquidado}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Posicionamiento",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizador/posicionamiento",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "posicionamiento"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Posicionamiento con token de asistente (403)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organizador/posicionamiento",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "posicionamiento"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
         }
       ]
     }
@@ -1834,6 +2094,14 @@
     },
     {
       "key": "id_factura",
+      "value": ""
+    },
+    {
+      "key": "id_evento_propio",
+      "value": ""
+    },
+    {
+      "key": "id_evento_liquidado",
       "value": ""
     }
   ]
