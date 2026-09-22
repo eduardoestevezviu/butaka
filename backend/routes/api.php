@@ -7,6 +7,7 @@ use App\Http\Controllers\CompraController;
 use App\Http\Controllers\DetalleCarritoController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\FacturaController;
+use App\Http\Controllers\RankingController;
 use App\Http\Controllers\TipoEntradaController;
 use App\Http\Controllers\UsuarioController;
 
@@ -48,6 +49,9 @@ Route::middleware(['auth:api', CheckToken::using('organizador')])->group(functio
 
   // GET /api/organizador/facturacion - Liquidaciones del organizador, filtrables con ?evento={id}
   Route::get('/organizador/facturacion', [FacturaController::class, 'facturacion']);
+
+  // GET /api/organizador/posicionamiento - Posición del organizador en el ranking por ocupación
+  Route::get('/organizador/posicionamiento', [RankingController::class, 'posicionamiento']);
 
 
   /**
