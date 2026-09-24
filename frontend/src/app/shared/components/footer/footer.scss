@@ -1,0 +1,53 @@
+.footer {
+  padding: 1rem;
+  background-color: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  box-sizing: border-box;
+
+  .footer-contenido {
+    max-width: 50%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .footer-marca {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.2rem;
+    gap: 0.4rem;
+  }
+
+  .nombre {
+    font-size: 0.95rem;
+  }
+
+  .footer-contacto {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 1rem;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 0.1rem;
+      font-size: 0.85rem;
+
+      mat-icon {
+        font-size: 1.2rem;
+        width: 1.2rem;
+        height: 1.2rem;
+      }
+    }
+  }
+
+  .footer-bottom {
+    border-top: 1px solid var(--mat-sys-outline-variant);
+    margin-top: 0.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    padding-top: 0.5rem;
+  }
+}

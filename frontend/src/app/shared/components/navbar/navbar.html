@@ -1,1 +1,84 @@
-<p>navbar works!</p>
+<mat-toolbar>
+  <a routerLink="/" mat-button>Butaka</a>
+
+  <a routerLink="/" mat-button>Eventos</a>
+
+  <span class="spacer"></span>
+
+  @if (authService.isLoggedIn()) {
+
+    <!-- Menú de gestión, solo para quien tenga ficha de organizador -->
+    @if (authService.esOrganizador()) {
+      <button mat-icon-button [matMenuTriggerFor]="menuOrganizador">
+        <mat-icon>storefront</mat-icon>
+      </button>
+      <mat-menu #menuOrganizador="matMenu">
+        <a routerLink="/gestion/eventos" mat-menu-item>
+          <mat-icon>event</mat-icon> Mis eventos
+        </a>
+        <a routerLink="/gestion/facturacion" mat-menu-item>
+          <mat-icon>receipt_long</mat-icon> Facturación
+        </a>
+        <a routerLink="/gestion/ranking" mat-menu-item>
+          <mat-icon>leaderboard</mat-icon> Mi posicionamiento
+        </a>
+      </mat-menu>
+    }
+
+    <!-- El globo con el número de entradas solo se pinta si hay alguna -->
+    <button mat-icon-button [matMenuTriggerFor]="menuCarrito">
+      <mat-icon [matBadge]="totalEntradas()" [matBadgeHidden]="totalEntradas() === 0" matBadgeColor="accent">
+        shopping_cart
+      </mat-icon>
+    </button>
+
+    <!-- Previsualización del carrito. Solo muestra, no deja cambiar cantidades -->
+    <mat-menu #menuCarrito="matMenu" class="menu-carrito">
+      @if (lineas().length === 0) {
+        <div class="carrito-vacio">No tienes entradas en el carrito</div>
+      } @else {
+        @for (linea of lineas(); track linea.id_tipo_entrada) {
+          <div class="carrito-linea">
+            <div class="carrito-texto">
+              <span class="evento">{{ linea.tipo_entrada?.evento?.nombre }}</span>
+              <span class="entrada">{{ linea.cantidad }} x {{ linea.tipo_entrada?.nombre }}</span>
+            </div>
+            <span class="importe">{{ subtotal(linea) | currency:'EUR' }}</span>
+          </div>
+        }
+
+        <mat-divider></mat-divider>
+
+        <div class="carrito-total">
+          <span>Total</span>
+          <span>{{ totalImporte() | currency:'EUR' }}</span>
+        </div>
+      }
+
+      <a routerLink="/carrito" mat-menu-item>
+        <mat-icon>shopping_cart_checkout</mat-icon> Ver carrito
+      </a>
+    </mat-menu>
+
+    <button mat-icon-button [matMenuTriggerFor]="menuUsuario">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #menuUsuario="matMenu">
+      <a routerLink="/perfil" mat-menu-item>
+        <mat-icon>manage_accounts</mat-icon> Mi perfil
+      </a>
+      <a routerLink="/compras" mat-menu-item>
+        <mat-icon>confirmation_number</mat-icon> Mis compras
+      </a>
+      <a routerLink="/facturas" mat-menu-item>
+        <mat-icon>description</mat-icon> Mis facturas
+      </a>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon> Cerrar sesión
+      </button>
+    </mat-menu>
+  } @else {
+    <a routerLink="/login" mat-button>Iniciar sesión</a>
+    <a routerLink="/registro" mat-button>Registrarse</a>
+  }
+</mat-toolbar>

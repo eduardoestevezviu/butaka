@@ -1,0 +1,46 @@
+.spacer {
+  flex: 1 1 auto;
+}
+
+// Previsualización del carrito que cuelga del icono de la barra
+::ng-deep .menu-carrito {
+  min-width: 300px;
+
+  .carrito-linea,
+  .carrito-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .carrito-texto {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .evento {
+    font-size: 0.9rem;
+  }
+
+  .entrada {
+    font-size: 0.8rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .importe {
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+
+  .carrito-total {
+    font-weight: 600;
+  }
+
+  .carrito-vacio {
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
