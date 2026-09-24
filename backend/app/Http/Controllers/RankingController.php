@@ -55,8 +55,9 @@ class RankingController extends Controller {
     return $result->toResponse();
   }
 
-  // Calcula la ocupación media de cada organizador y los ordena de mayor a menor
-  private function calcularClasificacion(): array {
+  // Calcula la ocupación media de cada organizador y los ordena de mayor a menor.
+  // Es pública porque el catálogo la usa para destacar a los mejor posicionados
+  public function calcularClasificacion(): array {
     $organizadores = Organizador::with([
       'eventos' => function ($consulta) {
         $consulta->where('id_estado_evento', '!=', EstadoEvento::ESTADO_CANCELADO);

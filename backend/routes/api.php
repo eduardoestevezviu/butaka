@@ -166,6 +166,11 @@ Route::controller(EventoController::class)->prefix('eventos')->group(function ()
   // GET /api/eventos - Catálogo de eventos publicados, con filtros y paginación
   Route::get('/', 'index');
 
+  // GET /api/eventos/destacados - Eventos de los organizadores mejor posicionados.
+  // Se declara antes que la ruta con parámetro, porque si no Laravel entendería
+  // que "destacados" es el identificador de un evento
+  Route::get('/destacados', 'destacados');
+
   // GET /api/eventos/{id} - Ficha de un evento con sus tipos de entrada
   Route::get('/{evento}', 'show');
 });

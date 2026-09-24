@@ -1,0 +1,126 @@
+.evento-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+// Dos columnas en escritorio, una debajo de otra en móvil
+.ficha {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detalle {
+  img {
+    width: 100%;
+    max-height: 340px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .categoria {
+    display: inline-block;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--mat-sys-primary);
+  }
+
+  h1 {
+    margin: 0.3rem 0 1rem;
+    font-size: 1.8rem;
+  }
+
+  .dato {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.35rem 0;
+    color: var(--mat-sys-on-surface-variant);
+
+    mat-icon {
+      font-size: 1.2rem;
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+  }
+
+  .descripcion {
+    margin-top: 1rem;
+    line-height: 1.6;
+    white-space: pre-line;
+  }
+}
+
+.entradas {
+  h2 {
+    margin-top: 0;
+  }
+
+  .entrada-card {
+    margin-bottom: 1rem;
+  }
+
+  .entrada-cabecera {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+
+    h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+  }
+
+  .precio {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  // El precio sin descuento se tacha y queda en segundo plano
+  .precio-original {
+    margin-right: 0.4rem;
+    font-weight: 400;
+    font-size: 0.85rem;
+    text-decoration: line-through;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .quedan,
+  .agotado {
+    margin: 0.4rem 0;
+    font-size: 0.8rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .agotado {
+    color: var(--mat-sys-error);
+  }
+
+  .entrada-compra {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    mat-form-field {
+      width: 100px;
+    }
+  }
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.error-message {
+  text-align: center;
+  padding: 2rem;
+}

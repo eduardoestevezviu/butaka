@@ -12,6 +12,11 @@ return [
   */
 
   'eventos_por_pagina' => 6,
+
+  // Eventos que se muestran en la banda de destacados del catálogo, y número de
+  // organizadores del ranking entre los que se eligen
+  'eventos_destacados' => 5,
+  'organizadores_destacados' => 3,
   'compras_por_pagina' => 5,
   'facturas_por_pagina' => 5,
 

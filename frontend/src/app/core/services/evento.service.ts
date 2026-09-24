@@ -30,6 +30,15 @@ export class EventoService {
   }
 
   /**
+   * Eventos de los organizadores mejor posicionados, para la banda de
+   * destacados del catálogo. No se pagina, son cinco como mucho
+   * @returns
+   */
+  getDestacados(): Observable<ApiResponse<Evento[]>> {
+    return this.http.get<ApiResponse<Evento[]>>(`${this.apiUrl}/destacados`);
+  }
+
+  /**
    * Ficha pública de un evento con sus tipos de entrada
    * @param id
    * @returns

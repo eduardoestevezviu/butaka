@@ -68,6 +68,55 @@ class EventoController extends Controller {
     return $result->toResponse();
   }
 
+  // Banda de destacados del catálogo. Muestra eventos de los organizadores mejor
+  // posicionados en el ranking, que es la recompensa práctica de estar arriba
+  public function destacados(): JsonResponse {
+    $result = new ResultResponse();
+    try {
+      $clasificacion = app(RankingController::class)->calcularClasificacion();
+
+      // La clasificación ya viene ordenada de mayor a menor ocupación, así que
+      // basta con quedarse con los primeros
+      $mejores = array_slice($clasificacion, 0, config('butaka.organizadores_destacados'));
+
+      $idsOrganizadores = [];
+      foreach ($mejores as $fila) {
+        $idsOrganizadores[] = $fila['id_usuario'];
+      }
+
+      // Al principio no hay ningún organizador con ocupación medible, y la banda
+      // simplemente no se pinta
+      if (empty($idsOrganizadores)) {
+        $result->setStatusCode(ResultResponse::HTTP_OK);
+        $result->setMessage(ResultResponse::MSG_OK);
+        $result->setData([]);
+        return $result->toResponse();
+      }
+
+      // Entre los eventos de esos organizadores se eligen los más próximos, para
+      // no destacar algo que se celebra dentro de medio año
+      // La banda solo pinta la imagen, el nombre, la fecha y el organizador, así que
+      // se piden únicamente esos campos y no se cargan los tipos de entrada
+      $eventos = Evento::select('id_evento', 'nombre', 'fecha', 'ubicacion', 'imagen', 'id_usuario')
+        ->where('id_estado_evento', EstadoEvento::ESTADO_PUBLICADO)
+        ->where('fecha', '>=', now())
+        ->whereIn('id_usuario', $idsOrganizadores)
+        ->with('organizador:id_usuario,nombre_comercial')
+        ->orderBy('fecha', 'asc')
+        ->take(config('butaka.eventos_destacados'))
+        ->get();
+
+      $result->setStatusCode(ResultResponse::HTTP_OK);
+      $result->setMessage(ResultResponse::MSG_OK);
+      $result->setData($eventos);
+    } catch (\Exception $e) {
+      $result->setStatusCode(ResultResponse::HTTP_ERROR);
+      $result->setMessage(ResultResponse::MSG_ERROR);
+    }
+
+    return $result->toResponse();
+  }
+
   // Listado de eventos del organizador autenticado, para su panel
   public function misEventos(Request $request): JsonResponse {
     $result = new ResultResponse();

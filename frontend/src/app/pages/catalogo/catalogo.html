@@ -1,1 +1,88 @@
-<p>catalogo works!</p>
+<div class="catalogo-container">
+
+  <!-- Banda de destacados. Solo aparece si hay organizadores posicionados -->
+  @if (destacados().length > 0) {
+    <section class="destacados">
+      <h2>Destacados</h2>
+      <div class="destacados-fila">
+        @for (evento of destacados(); track evento.id_evento) {
+          <mat-card class="destacado-card" (click)="verDetalle(evento)">
+            <img mat-card-image [src]="evento.imagen_url" [alt]="evento.nombre">
+            <mat-card-content>
+              <h3>{{ evento.nombre }}</h3>
+              <p class="organizador">{{ evento.organizador?.nombre_comercial }}</p>
+              <p class="fecha">{{ evento.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Buscador y filtro por categoría -->
+  <div class="filtros">
+    <mat-form-field appearance="outline">
+      <mat-label>Buscar eventos</mat-label>
+      <input matInput [value]="buscar()" (input)="buscar.set($any($event.target).value)" (keyup.enter)="onFiltrar()">
+      <button mat-icon-button matSuffix (click)="onFiltrar()">
+        <mat-icon>search</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Categoría</mat-label>
+      <mat-select [value]="categoria()" (selectionChange)="categoria.set($event.value); onFiltrar()">
+        <mat-option [value]="null">Todas</mat-option>
+        @for (c of categorias(); track c.id_categoria) {
+          <mat-option [value]="c.id_categoria">{{ c.categoria }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Spinner cargando -->
+  @if (cargando()) {
+    <div class="spinner-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  <!-- Rejilla de eventos -->
+  @if (!cargando() && !error()) {
+    @if (eventos().length === 0) {
+      <p class="sin-resultados">No se encontraron eventos</p>
+    } @else {
+      <div class="eventos-grid">
+        @for (evento of eventos(); track evento.id_evento) {
+          <mat-card class="evento-card" (click)="verDetalle(evento)">
+            <img mat-card-image [src]="evento.imagen_url" [alt]="evento.nombre">
+
+            <mat-card-content>
+              <span class="categoria">{{ evento.categoria?.categoria }}</span>
+              <h3>{{ evento.nombre }}</h3>
+              <p class="dato"><mat-icon>event</mat-icon> {{ evento.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+              <p class="dato"><mat-icon>location_on</mat-icon> {{ evento.ubicacion }}</p>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+
+      <!-- Paginación -->
+      <div class="paginacion">
+        <button mat-icon-button [disabled]="paginaActual() === 1" (click)="cambiarPagina(paginaActual() - 1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span>{{ paginaActual() }} / {{ totalPaginas() }}</span>
+        <button mat-icon-button [disabled]="paginaActual() === totalPaginas()" (click)="cambiarPagina(paginaActual() + 1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    }
+  }
+
+</div>

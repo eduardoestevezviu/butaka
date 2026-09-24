@@ -1,11 +1,120 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { DatePipe } from '@angular/common';
+import { EventoService } from '../../core/services/evento.service';
+import { CategoriaService } from '../../core/services/categoria.service';
+import { Evento } from '../../core/models/evento.model';
+import { Categoria } from '../../core/models/categoria.model';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-catalogo',
-  imports: [],
+  standalone: true,
+  imports: [
+    DatePipe,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatProgressSpinnerModule
+  ],
   templateUrl: './catalogo.html',
   styleUrl: './catalogo.scss',
 })
 export class Catalogo {
+  eventos = signal<Evento[]>([]);
+  destacados = signal<Evento[]>([]);
+  categorias = signal<Categoria[]>([]);
+  cargando = signal(true);
+  error = signal('');
+  buscar = signal('');
+  // Vale null cuando no hay ninguna categoría elegida, que es "todas"
+  categoria = signal<number | null>(null);
+  paginaActual = signal(1);
+  totalPaginas = signal(1);
 
+  constructor(
+    private eventoService: EventoService,
+    private categoriaService: CategoriaService,
+    private router: Router
+  ) { }
+
+  ngOnInit() {
+    this.cargarCategorias();
+    this.cargarDestacados();
+    this.cargarEventos();
+  }
+
+  /**
+   * Carga la banda de destacados. Llega vacía mientras ningún organizador tenga
+   * ocupación medible, y entonces la banda no se pinta
+   */
+  cargarDestacados() {
+    this.eventoService.getDestacados().subscribe({
+      next: (respuesta) => this.destacados.set(respuesta.data),
+      // Si falla, el catálogo funciona igual sin la banda
+      error: () => this.destacados.set([])
+    });
+  }
+
+  /**
+   * Carga el desplegable de categorías. El servicio las guarda en caché, así
+   * que al volver al catálogo no se vuelve a pedir
+   */
+  cargarCategorias() {
+    this.categoriaService.getCategorias().subscribe({
+      next: (respuesta) => this.categorias.set(respuesta.data),
+      // Si fallan las categorías el catálogo sigue siendo usable sin el filtro
+      error: () => this.categorias.set([])
+    });
+  }
+
+  cargarEventos() {
+    this.cargando.set(true);
+    this.error.set('');
+
+    this.eventoService.getEventos({
+      categoria: this.categoria(),
+      buscar: this.buscar(),
+      page: this.paginaActual()
+    }).subscribe({
+      next: (respuesta) => {
+        // data.data porque la primera es la del ResultResponse y la segunda
+        // la del paginador de Laravel
+        this.eventos.set(respuesta.data.data);
+        this.totalPaginas.set(respuesta.data.last_page);
+        this.cargando.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.message ?? 'Error al cargar los eventos');
+        this.cargando.set(false);
+      }
+    });
+  }
+
+  /**
+   * Cualquier cambio de filtro devuelve a la primera página, porque la página
+   * en la que estabas puede no existir con el nuevo filtro
+   */
+  onFiltrar() {
+    this.paginaActual.set(1);
+    this.cargarEventos();
+  }
+
+  cambiarPagina(pagina: number) {
+    this.paginaActual.set(pagina);
+    this.cargarEventos();
+  }
+
+  verDetalle(evento: Evento) {
+    this.router.navigate(['/eventos', evento.id_evento]);
+  }
 }

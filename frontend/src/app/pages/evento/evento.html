@@ -1,1 +1,85 @@
-<p>evento works!</p>
+<div class="evento-container">
+
+  <!-- Spinner cargando -->
+  @if (cargando()) {
+    <div class="spinner-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  @if (!cargando() && evento(); as ficha) {
+    <div class="ficha">
+
+      <!-- Columna izquierda, los datos del evento -->
+      <div class="detalle">
+        <img [src]="ficha.imagen_url" [alt]="ficha.nombre">
+
+        <span class="categoria">{{ ficha.categoria?.categoria }}</span>
+        <h1>{{ ficha.nombre }}</h1>
+
+        <p class="dato"><mat-icon>event</mat-icon> {{ ficha.fecha | date:'EEEE d MMMM y, HH:mm' }}</p>
+        <p class="dato"><mat-icon>location_on</mat-icon> {{ ficha.ubicacion }}</p>
+        <p class="dato"><mat-icon>storefront</mat-icon> {{ ficha.organizador?.nombre_comercial }}</p>
+
+        @if (ficha.descripcion) {
+          <mat-divider></mat-divider>
+          <p class="descripcion">{{ ficha.descripcion }}</p>
+        }
+      </div>
+
+      <!-- Columna derecha, las modalidades a la venta -->
+      <div class="entradas">
+        <h2>Entradas</h2>
+
+        @if (!ficha.tipo_entradas || ficha.tipo_entradas.length === 0) {
+          <p class="sin-entradas">Este evento todavía no tiene entradas a la venta</p>
+        } @else {
+          @for (tipo of ficha.tipo_entradas; track tipo.id_tipo_entrada) {
+            <mat-card class="entrada-card">
+              <mat-card-content>
+                <div class="entrada-cabecera">
+                  <h3>{{ tipo.nombre }}</h3>
+                  <span class="precio">
+                    @if (tipo.oferta) {
+                      <span class="precio-original">{{ tipo.precio | currency:'EUR' }}</span>
+                    }
+                    {{ precioFinal(tipo) | currency:'EUR' }}
+                  </span>
+                </div>
+
+                @if (disponibles(tipo) === 0) {
+                  <p class="agotado">Agotadas</p>
+                } @else {
+                  <p class="quedan">Quedan {{ disponibles(tipo) }}</p>
+
+                  <div class="entrada-compra">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Cantidad</mat-label>
+                      <mat-select [value]="cantidadDe(tipo)" (selectionChange)="cambiarCantidad(tipo, $event.value)">
+                        @for (n of opcionesCantidad(tipo); track n) {
+                          <mat-option [value]="n">{{ n }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+
+                    <button mat-flat-button color="primary" (click)="agregarAlCarrito(tipo)">
+                      <mat-icon>add_shopping_cart</mat-icon>
+                      Añadir
+                    </button>
+                  </div>
+                }
+              </mat-card-content>
+            </mat-card>
+          }
+        }
+      </div>
+
+    </div>
+  }
+
+</div>
