@@ -37,11 +37,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/compras/compras').then(m => m.Compras)
   },
   {
-    path: 'facturas',
-    canActivate: [authGuard],
-    loadComponent: () => import('./pages/facturas/facturas').then(m => m.Facturas)
-  },
-  {
     path: 'perfil',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/perfil/perfil').then(m => m.Perfil)

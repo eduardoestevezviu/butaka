@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiResponse, Paginado } from '../models/api-response.model';
+import { ApiResponse } from '../models/api-response.model';
 import { Factura } from '../models/factura.model';
 import { Facturacion } from '../models/facturacion.model';
 
@@ -13,19 +13,6 @@ export class FacturaService {
   private apiUrlOrganizador = '/api/organizador/facturacion';
 
   constructor(private http: HttpClient) { }
-
-  /**
-   * Facturas del usuario, tanto de compra como de liquidación
-   * @param page
-   * @returns
-   */
-  getFacturas(page?: number): Observable<ApiResponse<Paginado<Factura>>> {
-    let params = new HttpParams();
-
-    if (page) params = params.set('page', page);
-
-    return this.http.get<ApiResponse<Paginado<Factura>>>(this.apiUrl, { params });
-  }
 
   /**
    * Factura concreta con todos los datos que necesita el documento
