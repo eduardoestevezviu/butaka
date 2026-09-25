@@ -138,9 +138,6 @@ Route::middleware(['auth:api', CheckToken::using('asistente')])->group(function 
    */
   Route::controller(FacturaController::class)->prefix('facturas')->group(function () {
 
-    // GET /api/facturas - Comprobantes de compra y liquidaciones del usuario
-    Route::get('/', 'index');
-
     // GET /api/facturas/{id} - Detalle de una factura con su desglose
     Route::get('/{id}', 'show');
   });
@@ -191,7 +188,7 @@ Route::get('/categorias', [CategoriaController::class, 'index']);
 // repetir peticiones. El límite se cuenta por dirección IP, al no haber sesión.
 // El tercer parámetro es un prefijo para la clave del contador: sin él, este
 // límite y el general de la API compartirían contador y se estorbarían
-Route::middleware('throttle:5,1,acceso')->group(function () {
+Route::middleware('throttle:10,1,acceso')->group(function () {
 
   // POST /api/register - Alta de un usuario, que además emite su token
   Route::post('/register', [AuthController::class, 'register']);

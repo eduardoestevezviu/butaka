@@ -1223,150 +1223,6 @@
       ]
     },
     {
-      "name": "Facturas",
-      "item": [
-        {
-          "name": "Listar facturas",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/facturas",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "facturas"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_asistente}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const res = pm.response.json();",
-                  "pm.collectionVariables.set(\"id_factura\", res.data.data[0].id_factura);"
-                ]
-              }
-            }
-          ],
-          "response": []
-        },
-        {
-          "name": "Detalle de factura",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/facturas/{{id_factura}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "facturas",
-                "{{id_factura}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_asistente}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "response": []
-        },
-        {
-          "name": "Factura de otro usuario (403)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/facturas/{{id_factura}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "facturas",
-                "{{id_factura}}"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_organizador}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "response": []
-        },
-        {
-          "name": "Factura inexistente (404)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/facturas/1234",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "facturas",
-                "1234"
-              ]
-            },
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token_asistente}}",
-                  "type": "string"
-                }
-              ]
-            }
-          },
-          "protocolProfileBehavior": {
-            "disableBodyPruning": true
-          },
-          "response": []
-        }
-      ]
-    },
-    {
       "name": "Organizador",
       "item": [
         {
@@ -1932,7 +1788,8 @@
                 "type": "text/javascript",
                 "exec": [
                   "const res = pm.response.json();",
-                  "pm.collectionVariables.set(\"id_evento_liquidado\", res.data.liquidaciones[0].evento.id_evento);"
+                  "pm.collectionVariables.set(\"id_evento_liquidado\", res.data.liquidaciones[0].evento.id_evento);",
+                  "pm.collectionVariables.set(\"id_factura\", res.data.liquidaciones[0].id_factura);"
                 ]
               }
             }
@@ -2037,6 +1894,107 @@
                 }
               ]
             }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Facturas",
+      "item": [
+        {
+          "name": "Detalle de factura",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/facturas/{{id_factura}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "facturas",
+                "{{id_factura}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "response": []
+        },
+        {
+          "name": "Factura de otro usuario (403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/facturas/{{id_factura}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "facturas",
+                "{{id_factura}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "response": []
+        },
+        {
+          "name": "Factura inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/facturas/1234",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "facturas",
+                "1234"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
           },
           "response": []
         }

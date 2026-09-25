@@ -18,7 +18,6 @@ return [
   'eventos_destacados' => 5,
   'organizadores_destacados' => 3,
   'compras_por_pagina' => 5,
-  'facturas_por_pagina' => 5,
 
   /*
   |--------------------------------------------------------------------------

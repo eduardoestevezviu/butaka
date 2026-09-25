@@ -19,27 +19,6 @@ class FacturaController extends Controller {
   const SERIE_COMPRA = 'C';
   const SERIE_LIQUIDACION = 'L';
 
-  // Listado de las facturas del usuario autenticado. Recoge los comprobantes de
-  // sus compras y, si además es organizador, las liquidaciones de sus eventos
-  public function index(Request $request): JsonResponse {
-    $result = new ResultResponse();
-    try {
-      $facturas = Factura::where('id_usuario', $request->user()->id_usuario)
-        ->with('tipoFactura:id_tipo_factura,tipo_factura')
-        ->orderBy('fecha_emision', 'desc')
-        ->paginate(config('butaka.facturas_por_pagina'));
-
-      $result->setStatusCode(ResultResponse::HTTP_OK);
-      $result->setMessage(ResultResponse::MSG_OK);
-      $result->setData($facturas);
-    } catch (\Exception $e) {
-      $result->setStatusCode(ResultResponse::HTTP_ERROR);
-      $result->setMessage(ResultResponse::MSG_ERROR);
-    }
-
-    return $result->toResponse();
-  }
-
   // Facturación del organizador: las liquidaciones de sus eventos, con lo que le
   // corresponde una vez descontada la comisión
   public function facturacion(Request $request): JsonResponse {
