@@ -1,1 +1,47 @@
-<p>login works!</p>
+<div class="login-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Iniciar sesión</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <!-- Input email -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="email@email.com">
+          @if (loginForm.get('email')?.hasError('required')) {
+            <mat-error>El email es obligatorio</mat-error>
+          }
+          @if (loginForm.get('email')?.hasError('email')) {
+            <mat-error>El email no es válido</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Input contraseña -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contraseña</mat-label>
+          <input matInput formControlName="password" [type]="mostrarPassword ? 'text' : 'password'">
+          <button mat-icon-button matSuffix type="button" (click)="mostrarPassword = !mostrarPassword">
+            <mat-icon>{{ mostrarPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (loginForm.get('password')?.hasError('required')) {
+            <mat-error>La contraseña es obligatoria</mat-error>
+          }
+        </mat-form-field>
+
+        @if (error()) {
+          <p class="error-message">{{ error() }}</p>
+        }
+
+        <button mat-flat-button color="primary" type="submit" class="full-width" [disabled]="cargando()">
+          {{ cargando() ? 'Iniciando sesión...' : 'Iniciar sesión' }}
+        </button>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <p>¿No tienes cuenta? <a routerLink="/registro" mat-button>Regístrate</a></p>
+    </mat-card-actions>
+  </mat-card>
+</div>

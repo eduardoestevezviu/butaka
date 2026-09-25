@@ -1,0 +1,32 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+
+  mat-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 1.5rem;
+  }
+}
+
+// Los campos ocupan todo el ancho de la tarjeta
+.full-width {
+  width: 100%;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+.error-message {
+  margin: 0 0 1rem;
+  text-align: center;
+  color: var(--mat-sys-error);
+}
+
+mat-card-actions {
+  justify-content: center;
+  font-size: 0.9rem;
+}
