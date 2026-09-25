@@ -1,1 +1,88 @@
-<p>carrito works!</p>
+<div class="carrito-container">
+  <h1>Mi carrito</h1>
+
+  @if (lineas().length === 0) {
+    <p class="vacio">No tienes entradas en el carrito</p>
+  } @else {
+    <div class="contenido">
+
+      <!-- Columna izquierda, las líneas del carrito -->
+      <div class="lineas">
+        @for (linea of lineas(); track linea.id_tipo_entrada) {
+          <mat-card class="linea">
+            <mat-card-content>
+              <div class="linea-datos">
+                <span class="evento">{{ linea.tipo_entrada?.evento?.nombre }}</span>
+                <span class="secundario">{{ linea.tipo_entrada?.evento?.fecha | date:'dd/MM/yyyy HH:mm' }}</span>
+                <span class="secundario">{{ linea.tipo_entrada?.nombre }}</span>
+              </div>
+
+              <div class="linea-acciones">
+                <mat-form-field appearance="outline">
+                  <mat-label>Cantidad</mat-label>
+                  <mat-select [value]="linea.cantidad" (selectionChange)="cambiarCantidad(linea, $event.value)">
+                    @for (n of opcionesCantidad(linea); track n) {
+                      <mat-option [value]="n">{{ n }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+
+                <span class="importe">{{ subtotalLinea(linea) | currency:'EUR' }}</span>
+
+                <button mat-icon-button (click)="eliminar(linea)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+
+      <!-- Columna derecha, puntos y resumen -->
+      <div class="resumen">
+        <mat-card>
+          <mat-card-content>
+            <h2>Resumen</h2>
+
+            <!-- Canje de puntos. Solo se ofrece si se llega al mínimo -->
+            @if (puntosDisponibles() >= minimoCanje) {
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Puntos a canjear</mat-label>
+                <input matInput type="number" [value]="puntosACanjear()" (input)="cambiarPuntos($any($event.target).value)">
+                <mat-hint>Tienes {{ puntosDisponibles() }} puntos. Máximo en esta compra: {{ maximoCanjeable() }}</mat-hint>
+              </mat-form-field>
+            } @else {
+              <p class="secundario">
+                Tienes {{ puntosDisponibles() }} puntos. Necesitas {{ minimoCanje }} para poder canjearlos.
+              </p>
+            }
+
+            <mat-divider></mat-divider>
+
+            <div class="fila-resumen">
+              <span>Subtotal</span>
+              <span>{{ subtotal() | currency:'EUR' }}</span>
+            </div>
+
+            @if (descuento() > 0) {
+              <div class="fila-resumen descuento">
+                <span>Descuento por puntos</span>
+                <span>- {{ descuento() | currency:'EUR' }}</span>
+              </div>
+            }
+
+            <div class="fila-resumen total">
+              <span>Total</span>
+              <span>{{ total() | currency:'EUR' }}</span>
+            </div>
+
+            <button mat-flat-button color="primary" class="full-width" [disabled]="procesando()" (click)="comprar()">
+              {{ procesando() ? 'Procesando...' : 'Confirmar compra' }}
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+    </div>
+  }
+</div>

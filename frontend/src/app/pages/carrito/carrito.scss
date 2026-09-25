@@ -1,0 +1,89 @@
+.carrito-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.vacio {
+  padding: 2rem 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+// El resumen queda a la derecha, y debajo de las líneas en pantallas pequeñas
+.contenido {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.linea {
+  margin-bottom: 1rem;
+
+  mat-card-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+}
+
+.linea-datos {
+  display: flex;
+  flex-direction: column;
+}
+
+.evento {
+  font-weight: 600;
+}
+
+.secundario {
+  font-size: 0.85rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.linea-acciones {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  mat-form-field {
+    width: 100px;
+  }
+}
+
+.importe {
+  min-width: 80px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.resumen {
+  h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+  }
+
+  .fila-resumen {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.6rem 0;
+  }
+
+  .descuento {
+    color: var(--mat-sys-primary);
+  }
+
+  .total {
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
