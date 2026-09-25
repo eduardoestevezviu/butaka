@@ -1,1 +1,123 @@
-<p>registro works!</p>
+<div class="registro-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Crear cuenta</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+
+        <!-- Datos personales -->
+        <div class="fila">
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="nombre">
+            @if (registroForm.get('nombre')?.hasError('required')) {
+              <mat-error>El nombre es obligatorio</mat-error>
+            }
+            @if (registroForm.get('nombre')?.hasError('pattern')) {
+              <mat-error>El nombre solo admite letras</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Apellidos</mat-label>
+            <input matInput formControlName="apellidos">
+            @if (registroForm.get('apellidos')?.hasError('required')) {
+              <mat-error>Los apellidos son obligatorios</mat-error>
+            }
+            @if (registroForm.get('apellidos')?.hasError('pattern')) {
+              <mat-error>Los apellidos solo admiten letras</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Credenciales -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="email@email.com">
+          @if (registroForm.get('email')?.hasError('required')) {
+            <mat-error>El email es obligatorio</mat-error>
+          }
+          @if (registroForm.get('email')?.hasError('email')) {
+            <mat-error>El email no es válido</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="fila">
+          <mat-form-field appearance="outline">
+            <mat-label>Contraseña</mat-label>
+            <input matInput formControlName="password" [type]="mostrarPassword ? 'text' : 'password'">
+            <button mat-icon-button matSuffix type="button" (click)="mostrarPassword = !mostrarPassword">
+              <mat-icon>{{ mostrarPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (registroForm.get('password')?.hasError('required')) {
+              <mat-error>La contraseña es obligatoria</mat-error>
+            }
+            @if (registroForm.get('password')?.hasError('minlength')) {
+              <mat-error>Debe tener al menos 8 caracteres</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Repetir contraseña</mat-label>
+            <input matInput formControlName="passwordConfirmation" [type]="mostrarPassword ? 'text' : 'password'">
+            @if (registroForm.get('passwordConfirmation')?.hasError('noCoinciden')) {
+              <mat-error>Las contraseñas no coinciden</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <!-- Datos de contacto, todos opcionales -->
+        <p class="apartado">Datos de contacto (opcionales)</p>
+
+        <div class="fila">
+          <mat-form-field appearance="outline">
+            <mat-label>Teléfono</mat-label>
+            <input matInput formControlName="numero_telefono">
+            @if (registroForm.get('numero_telefono')?.hasError('pattern')) {
+              <mat-error>Deben ser nueve dígitos</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Ciudad</mat-label>
+            <input matInput formControlName="ciudad">
+          </mat-form-field>
+        </div>
+
+        <div class="fila">
+          <mat-form-field appearance="outline">
+            <mat-label>Calle</mat-label>
+            <input matInput formControlName="calle">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="estrecho">
+            <mat-label>Vivienda</mat-label>
+            <input matInput formControlName="vivienda">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="estrecho">
+            <mat-label>Código postal</mat-label>
+            <input matInput formControlName="codigo_postal">
+            @if (registroForm.get('codigo_postal')?.hasError('pattern')) {
+              <mat-error>Deben ser cinco dígitos</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        @if (error()) {
+          <p class="error-message">{{ error() }}</p>
+        }
+
+        <button mat-flat-button color="primary" type="submit" class="full-width" [disabled]="cargando()">
+          {{ cargando() ? 'Creando cuenta...' : 'Crear cuenta' }}
+        </button>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <p>¿Ya tienes cuenta? <a routerLink="/login" mat-button>Inicia sesión</a></p>
+    </mat-card-actions>
+  </mat-card>
+</div>

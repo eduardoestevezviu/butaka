@@ -63,7 +63,9 @@ export class CarritoService {
    */
   cargarCarrito(): void {
     this.getCarrito().subscribe({
-      next: (respuesta) => this.carritoActual.set(respuesta.data),
+      // Cuando el usuario no tiene carrito, ResultResponse omite la clave data
+      // por completo, así que aquí llega undefined y no null
+      next: (respuesta) => this.carritoActual.set(respuesta.data ?? null),
       error: () => this.carritoActual.set(null)
     });
   }

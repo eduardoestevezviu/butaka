@@ -33,7 +33,7 @@ export class Navbar {
   lineas = computed<DetalleCarrito[]>(() => {
     const carrito = this.carritoService.carritoActual();
 
-    if (carrito === null || !carrito.detalle_carritos) {
+    if (!carrito || !carrito.detalle_carritos) {
       return [];
     }
 
