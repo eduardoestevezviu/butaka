@@ -1,1 +1,180 @@
-<p>perfil works!</p>
+<div class="perfil-container">
+  <h1>Mi perfil</h1>
+
+  @if (cargando()) {
+    <div class="spinner-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  } @else {
+
+    <!-- Puntos de fidelización -->
+    <mat-card class="tarjeta puntos">
+      <mat-card-content>
+        <mat-icon>loyalty</mat-icon>
+        <div>
+          <span class="cifra">{{ puntos() }}</span>
+          <span class="etiqueta">puntos acumulados</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Datos personales -->
+    <mat-card class="tarjeta">
+      <mat-card-content>
+        <h2>Datos personales</h2>
+
+        <form [formGroup]="datosForm" (ngSubmit)="guardarDatos()">
+          <div class="fila">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="nombre">
+              @if (datosForm.get('nombre')?.hasError('required')) {
+                <mat-error>El nombre es obligatorio</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Apellidos</mat-label>
+              <input matInput formControlName="apellidos">
+              @if (datosForm.get('apellidos')?.hasError('required')) {
+                <mat-error>Los apellidos son obligatorios</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="fila">
+            <mat-form-field appearance="outline">
+              <mat-label>Teléfono</mat-label>
+              <input matInput formControlName="numero_telefono">
+              @if (datosForm.get('numero_telefono')?.hasError('pattern')) {
+                <mat-error>Deben ser nueve dígitos</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Ciudad</mat-label>
+              <input matInput formControlName="ciudad">
+            </mat-form-field>
+          </div>
+
+          <div class="fila">
+            <mat-form-field appearance="outline">
+              <mat-label>Calle</mat-label>
+              <input matInput formControlName="calle">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="estrecho">
+              <mat-label>Vivienda</mat-label>
+              <input matInput formControlName="vivienda">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="estrecho">
+              <mat-label>Código postal</mat-label>
+              <input matInput formControlName="codigo_postal">
+              @if (datosForm.get('codigo_postal')?.hasError('pattern')) {
+                <mat-error>Deben ser cinco dígitos</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <mat-divider></mat-divider>
+
+          <p class="apartado">Cambiar la contraseña (déjalo vacío si no quieres cambiarla)</p>
+
+          <div class="fila">
+            <mat-form-field appearance="outline">
+              <mat-label>Contraseña nueva</mat-label>
+              <input matInput type="password" formControlName="password">
+              @if (datosForm.get('password')?.hasError('minlength')) {
+                <mat-error>Debe tener al menos 8 caracteres</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Repetir contraseña</mat-label>
+              <input matInput type="password" formControlName="passwordConfirmation">
+              @if (datosForm.get('passwordConfirmation')?.hasError('noCoinciden')) {
+                <mat-error>Las contraseñas no coinciden</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <button mat-flat-button color="primary" type="submit" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Datos fiscales -->
+    <mat-card class="tarjeta">
+      <mat-card-content>
+        @if (esOrganizador()) {
+          <h2>Datos fiscales</h2>
+          <p class="apartado">Estos son los datos con los que Butaka emite tus liquidaciones.</p>
+        } @else {
+          <h2>Publica tus propios eventos</h2>
+          <p class="apartado">
+            Aporta tus datos fiscales y podrás crear eventos y vender entradas en Butaka.
+          </p>
+        }
+
+        <form [formGroup]="organizadorForm" (ngSubmit)="guardarFiscales()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nombre comercial</mat-label>
+            <input matInput formControlName="nombre_comercial">
+            @if (organizadorForm.get('nombre_comercial')?.hasError('required')) {
+              <mat-error>El nombre comercial es obligatorio</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="fila">
+            <mat-form-field appearance="outline">
+              <mat-label>NIF o CIF</mat-label>
+              <input matInput formControlName="nif" maxlength="9">
+              @if (organizadorForm.get('nif')?.hasError('required')) {
+                <mat-error>El NIF es obligatorio</mat-error>
+              }
+              @if (organizadorForm.get('nif')?.hasError('minlength')) {
+                <mat-error>Deben ser nueve caracteres</mat-error>
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>IBAN</mat-label>
+              <input matInput formControlName="iban">
+              @if (organizadorForm.get('iban')?.hasError('required')) {
+                <mat-error>El IBAN es obligatorio</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <button mat-flat-button color="primary" type="submit" [disabled]="guardandoFiscales()">
+            @if (guardandoFiscales()) {
+              Guardando...
+            } @else if (esOrganizador()) {
+              Guardar datos fiscales
+            } @else {
+              Darse de alta como organizador
+            }
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Baja de la cuenta -->
+    <mat-card class="tarjeta baja">
+      <mat-card-content>
+        <h2>Dar de baja la cuenta</h2>
+        <p class="apartado">
+          Tu cuenta dejará de estar activa. Puedes recuperarla en cualquier momento volviendo a iniciar sesión.
+        </p>
+        <button mat-stroked-button color="warn" (click)="darDeBaja()">
+          <mat-icon>person_off</mat-icon>
+          Dar de baja
+        </button>
+      </mat-card-content>
+    </mat-card>
+
+  }
+</div>

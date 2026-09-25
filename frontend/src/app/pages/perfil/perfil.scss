@@ -1,0 +1,86 @@
+.perfil-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.tarjeta {
+  margin-bottom: 1.5rem;
+
+  h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+  }
+}
+
+// Tarjeta de puntos, con el icono a la izquierda y la cifra destacada
+.puntos {
+  mat-card-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  mat-icon {
+    font-size: 2.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: var(--mat-sys-primary);
+  }
+
+  .cifra {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+
+  .etiqueta {
+    font-size: 0.9rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  mat-form-field {
+    flex: 1 1 200px;
+  }
+
+  .estrecho {
+    flex: 1 1 120px;
+  }
+}
+
+.full-width {
+  width: 100%;
+}
+
+.apartado {
+  margin: 0.5rem 0 1rem;
+  font-size: 0.9rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+button {
+  align-self: flex-start;
+}
+
+.baja {
+  button {
+    align-self: flex-start;
+  }
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
