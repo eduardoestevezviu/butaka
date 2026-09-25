@@ -186,8 +186,16 @@ Route::get('/categorias', [CategoriaController::class, 'index']);
 /**
  * RUTAS SESIÓN
  */
-// POST /api/register - Alta de usuario, que devuelve ya su token
-Route::post('/register', [AuthController::class, 'register']);
+// El alta y el acceso llevan un límite más estricto, cinco por minuto, porque son
+// las dos puertas por las que se intentaría adivinar una contraseña a base de
+// repetir peticiones. El límite se cuenta por dirección IP, al no haber sesión.
+// El tercer parámetro es un prefijo para la clave del contador: sin él, este
+// límite y el general de la API compartirían contador y se estorbarían
+Route::middleware('throttle:5,1,acceso')->group(function () {
 
-// POST /api/login - Iniciar sesión, reactivando la cuenta si estaba de baja
-Route::post('/login', [AuthController::class, 'login']);
+  // POST /api/register - Alta de un usuario, que además emite su token
+  Route::post('/register', [AuthController::class, 'register']);
+
+  // POST /api/login - Iniciar sesión, reactivando la cuenta si estaba de baja
+  Route::post('/login', [AuthController::class, 'login']);
+});

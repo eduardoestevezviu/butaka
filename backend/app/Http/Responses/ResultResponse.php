@@ -17,6 +17,7 @@ class ResultResponse {
   const HTTP_FORBIDDEN = 403;
   const HTTP_NOT_FOUND = 404;
   const HTTP_CONFLICT = 409;
+  const HTTP_TOO_MANY_REQUESTS = 429;
   const HTTP_ERROR = 500;
 
   /*
@@ -31,6 +32,7 @@ class ResultResponse {
   const MSG_UNAUTHORIZED = 'Credenciales inválidas';
   const MSG_FORBIDDEN = 'No tiene permiso sobre este recurso';
   const MSG_CONFLICT = 'El recurso ya existe';
+  const MSG_TOO_MANY_REQUESTS = 'Demasiadas peticiones, inténtelo de nuevo en unos instantes';
   const MSG_VALIDATION_ERROR = 'Error de validación';
 
   /*
