@@ -1,1 +1,96 @@
-<p>compras works!</p>
+<div class="compras-container">
+  <h1>Mis compras</h1>
+
+  @if (cargando()) {
+    <div class="spinner-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    @if (compras().length === 0) {
+      <p class="vacio">Todavía no has comprado ninguna entrada</p>
+    } @else {
+      <mat-accordion>
+        @for (compra of compras(); track compra.id_compra) {
+          <mat-expansion-panel (opened)="abrirDetalle(compra)">
+
+            <!-- Cabecera, con lo que ya trae el listado -->
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ resumen(compra) }}</mat-panel-title>
+              <mat-panel-description>
+                <span>{{ compra.created_at | date:'dd/MM/yyyy' }}</span>
+                <span class="importe">{{ compra.importe_total | currency:'EUR' }}</span>
+                @if (compra.id_estado_pago === estadoPendiente) {
+                  <mat-chip class="pendiente">Pendiente de pago</mat-chip>
+                } @else if (compra.id_estado_pago === estadoCompletado) {
+                  <mat-chip class="pagada">Pagada</mat-chip>
+                } @else {
+                  <mat-chip>Reembolsada</mat-chip>
+                }
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <!-- Detalle, que se pide al desplegar -->
+            @if (detalleDe(compra); as detalle) {
+              <div class="detalle">
+                @for (linea of detalle.detalle_compras; track linea.id_tipo_entrada) {
+                  <div class="linea">
+                    <div class="linea-datos">
+                      <span class="evento">{{ linea.tipo_entrada?.evento?.nombre }}</span>
+                      <span class="secundario">
+                        {{ linea.tipo_entrada?.evento?.fecha | date:'dd/MM/yyyy HH:mm' }}
+                        · {{ linea.tipo_entrada?.evento?.ubicacion }}
+                      </span>
+                      <span class="secundario">{{ linea.cantidad }} x {{ linea.tipo_entrada?.nombre }}</span>
+                    </div>
+                    <span class="importe">{{ linea.precio_unitario | currency:'EUR' }}</span>
+                  </div>
+                }
+
+                <mat-divider></mat-divider>
+
+                <div class="puntos">
+                  <span>Puntos ganados: {{ detalle.puntos_ganados }}</span>
+                  @if (detalle.puntos_canjeados > 0) {
+                    <span>Puntos canjeados: {{ detalle.puntos_canjeados }}</span>
+                  }
+                </div>
+
+                @if (detalle.factura) {
+                  <div class="factura">
+                    <span>Factura {{ detalle.factura.numero_factura }}</span>
+                    <button mat-stroked-button>
+                      <mat-icon>download</mat-icon>
+                      Descargar
+                    </button>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="spinner-container">
+                <mat-spinner diameter="32"></mat-spinner>
+              </div>
+            }
+
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+
+      <!-- Paginación -->
+      <div class="paginacion">
+        <button mat-icon-button [disabled]="paginaActual() === 1" (click)="cambiarPagina(paginaActual() - 1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span>{{ paginaActual() }} / {{ totalPaginas() }}</span>
+        <button mat-icon-button [disabled]="paginaActual() === totalPaginas()" (click)="cambiarPagina(paginaActual() + 1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    }
+  }
+</div>

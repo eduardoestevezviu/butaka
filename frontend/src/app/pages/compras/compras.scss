@@ -1,0 +1,87 @@
+.compras-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+mat-panel-description {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.detalle {
+  padding-top: 0.5rem;
+}
+
+.linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.linea-datos {
+  display: flex;
+  flex-direction: column;
+}
+
+.evento {
+  font-weight: 600;
+}
+
+.secundario {
+  font-size: 0.85rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.importe {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.puntos {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+// Las entradas compradas y pendientes se distinguen por el color del distintivo
+.pendiente {
+  --mdc-chip-elevated-container-color: var(--mat-sys-tertiary-container);
+}
+
+.pagada {
+  --mdc-chip-elevated-container-color: var(--mat-sys-primary-container);
+}
+
+.factura {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.75rem;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.vacio,
+.error-message {
+  padding: 2rem 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
