@@ -77,7 +77,8 @@
                 @if (detalle.factura) {
                   <div class="factura">
                     <span>Factura {{ detalle.factura.numero_factura }}</span>
-                    <button mat-stroked-button>
+                    <button mat-stroked-button
+                            (click)="descargarFactura(detalle.factura.id_factura, detalle.factura.numero_factura)">
                       <mat-icon>download</mat-icon>
                       Descargar
                     </button>

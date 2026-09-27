@@ -21,6 +21,12 @@ class TipoEntradaController extends Controller {
         return $result->toResponse();
       }
 
+      if ($this->eventoYaCelebrado($evento)) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('Un evento ya celebrado no admite cambios en sus entradas');
+        return $result->toResponse();
+      }
+
       $datos = $this->validarTipoEntrada($request);
       $datos['id_evento'] = $evento->id_evento;
 
@@ -47,6 +53,12 @@ class TipoEntradaController extends Controller {
       if (!$this->esPropietario($request, $tipoEntrada)) {
         $result->setStatusCode(ResultResponse::HTTP_FORBIDDEN);
         $result->setMessage(ResultResponse::MSG_FORBIDDEN);
+        return $result->toResponse();
+      }
+
+      if ($this->eventoYaCelebrado($tipoEntrada->evento)) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('Un evento ya celebrado no admite cambios en sus entradas');
         return $result->toResponse();
       }
 
@@ -85,6 +97,12 @@ class TipoEntradaController extends Controller {
         return $result->toResponse();
       }
 
+      if ($this->eventoYaCelebrado($tipoEntrada->evento)) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('Un evento ya celebrado no admite cambios en sus entradas');
+        return $result->toResponse();
+      }
+
       // Un tipo de entrada con ventas no se elimina, ya que de él cuelgan compras y facturas
       if ($tipoEntrada->vendidas > 0) {
         $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
@@ -112,6 +130,12 @@ class TipoEntradaController extends Controller {
   }
 
   // Comprueba que el tipo de entrada pertenece a un evento del organizador autenticado
+  // Las entradas de un evento pasado no se tocan: su venta terminó y de ellas
+  // cuelgan las compras y la liquidación
+  private function eventoYaCelebrado(Evento $evento): bool {
+    return now()->greaterThan($evento->fecha);
+  }
+
   private function esPropietario(Request $request, TipoEntrada $tipoEntrada): bool {
     return $tipoEntrada->evento->id_usuario === $request->user()->id_usuario;
   }

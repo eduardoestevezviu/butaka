@@ -11,6 +11,24 @@ return [
   |
   */
 
+  /*
+  |--------------------------------------------------------------------------
+  | Datos del emisor
+  |--------------------------------------------------------------------------
+  |
+  | Identificación de Butaka como emisora de las facturas. Aparecen en la
+  | cabecera de todos los documentos que genera la plataforma.
+  |
+  */
+
+  'emisor' => [
+    'nombre' => 'Butaka',
+    'nif' => 'B12345678',
+    'direccion' => 'Avenida 123, 15',
+    'localidad' => '38001 Santa Cruz de Tenerife',
+    'email' => 'facturacion@butaka.es',
+  ],
+
   'eventos_por_pagina' => 6,
 
   // Eventos que se muestran en la banda de destacados del catálogo, y número de

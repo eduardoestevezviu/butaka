@@ -20,6 +20,9 @@ export interface Evento {
   created_at: string;
   updated_at: string;
 
+  // Solo en el listado del organizador: indica si ya se emitió su liquidación
+  liquidado?: boolean;
+
   organizador?: Organizador;
   categoria?: Categoria;
   estado_evento?: EstadoEvento;

@@ -45,20 +45,30 @@
                 Ventas
               </button>
 
-              <button mat-stroked-button (click)="gestionarEntradas(evento)">
-                <mat-icon>confirmation_number</mat-icon>
-                Entradas
-              </button>
+              <!-- Un evento celebrado o cancelado ya no se toca -->
+              @if (!yaCelebrado(evento) && evento.id_estado_evento !== estadoCancelado) {
+                <button mat-stroked-button (click)="gestionarEntradas(evento)">
+                  <mat-icon>confirmation_number</mat-icon>
+                  Entradas
+                </button>
 
-              <button mat-stroked-button (click)="editarEvento(evento)">
-                <mat-icon>edit</mat-icon>
-                Editar
-              </button>
+                <button mat-stroked-button (click)="editarEvento(evento)">
+                  <mat-icon>edit</mat-icon>
+                  Editar
+                </button>
+              }
+
+              @if (sePuedeLiquidar(evento)) {
+                <button mat-stroked-button (click)="liquidar(evento)">
+                  <mat-icon>request_quote</mat-icon>
+                  Liquidar
+                </button>
+              }
 
               <!-- Un evento sin ventas se elimina sin más. Si ya ha vendido
                    entradas hay que cancelarlo, para devolver el dinero y avisar
                    a los asistentes. Si ya está cancelado, no se ofrece ninguna -->
-              @if (evento.id_estado_evento !== estadoCancelado) {
+              @if (!yaCelebrado(evento) && evento.id_estado_evento !== estadoCancelado) {
                 @if (vendidas(evento) === 0) {
                   <button mat-icon-button (click)="eliminarEvento(evento)">
                     <mat-icon>delete</mat-icon>

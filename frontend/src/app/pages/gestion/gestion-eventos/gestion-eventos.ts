@@ -237,6 +237,47 @@ export class GestionEventos {
     this.snackBar.open(`Evento cancelado y ${anuladas} compras devueltas`, 'Cerrar', { duration: 5000 });
   }
 
+  /**
+   * Un evento ya celebrado no se edita, ni se cancela, ni se elimina, ni admite
+   * cambios en sus entradas: lo único que queda por hacer con él es liquidarlo
+   * @param evento
+   * @returns
+   */
+  yaCelebrado(evento: Evento): boolean {
+    return new Date(evento.fecha) < new Date();
+  }
+
+  /**
+   * Un evento se puede liquidar cuando ya se ha celebrado, no está cancelado y
+   * no tiene todavía su factura de liquidación
+   * @param evento
+   * @returns
+   */
+  sePuedeLiquidar(evento: Evento): boolean {
+    if (evento.id_estado_evento === this.estadoCancelado || evento.liquidado) {
+      return false;
+    }
+
+    return this.yaCelebrado(evento);
+  }
+
+  /**
+   * Emite la liquidación del evento. No pide confirmación porque no destruye
+   * nada: genera la factura con la que el organizador cobra
+   * @param evento
+   */
+  liquidar(evento: Evento) {
+    this.eventoService.liquidarEvento(evento.id_evento).subscribe({
+      next: (respuesta) => {
+        this.snackBar.open(`Liquidación ${respuesta.data.numero_factura} emitida`, 'Cerrar', { duration: 5000 });
+        this.cargarEventos();
+      },
+      error: (err) => {
+        this.snackBar.open(err.error?.message ?? 'No se pudo emitir la liquidación', 'Cerrar', { duration: 4000 });
+      }
+    });
+  }
+
   verVentas(evento: Evento) {
     this.router.navigate(['/gestion/eventos', evento.id_evento, 'ventas']);
   }

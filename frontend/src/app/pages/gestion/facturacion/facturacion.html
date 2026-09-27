@@ -92,6 +92,15 @@
               <td mat-cell *matCellDef="let fila">{{ fila.neto | currency:'EUR' }}</td>
             </ng-container>
 
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let fila">
+                <button mat-icon-button (click)="descargar(fila.id_factura, fila.numero_factura)">
+                  <mat-icon>download</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="columnas"></tr>
             <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
           </table>

@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-facturacion',
@@ -37,9 +38,12 @@ export class Facturacion {
   eventosLiquidados = signal<{ id: string; nombre: string }[]>([]);
   eventoSeleccionado = signal<string | null>(null);
 
-  columnas = ['numero_factura', 'fecha_emision', 'evento', 'importe_bruto', 'comision', 'neto'];
+  columnas = ['numero_factura', 'fecha_emision', 'evento', 'importe_bruto', 'comision', 'neto', 'acciones'];
 
-  constructor(private facturaService: FacturaService) { }
+  constructor(
+    private facturaService: FacturaService,
+    private snackBar: MatSnackBar
+  ) { }
 
   ngOnInit() {
     this.cargarFacturacion();
@@ -78,6 +82,30 @@ export class Facturacion {
     }
 
     this.eventosLiquidados.set(eventos);
+  }
+
+  /**
+   * Descarga el PDF de la liquidación. Se trae el fichero y se provoca la
+   * descarga con un enlace temporal, porque la ruta exige el token
+   * @param idFactura
+   * @param numero
+   */
+  descargar(idFactura: string, numero: string) {
+    this.facturaService.descargarPdf(idFactura).subscribe({
+      next: (fichero) => {
+        const direccion = URL.createObjectURL(fichero);
+        const enlace = document.createElement('a');
+
+        enlace.href = direccion;
+        enlace.download = `${numero}.pdf`;
+        enlace.click();
+
+        URL.revokeObjectURL(direccion);
+      },
+      error: () => {
+        this.snackBar.open('No se pudo descargar la liquidación', 'Cerrar', { duration: 4000 });
+      }
+    });
   }
 
   filtrar(idEvento: string | null) {

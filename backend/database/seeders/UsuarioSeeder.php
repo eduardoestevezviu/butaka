@@ -18,6 +18,14 @@ class UsuarioSeeder extends Seeder {
     $lucia = (string) Str::uuid();
     $marcos = (string) Str::uuid();
     $nerea = (string) Str::uuid();
+    $yaiza = (string) Str::uuid();
+    $airam = (string) Str::uuid();
+    $dacil = (string) Str::uuid();
+    $nauzet = (string) Str::uuid();
+    $guacimara = (string) Str::uuid();
+    $jonay = (string) Str::uuid();
+    $idaira = (string) Str::uuid();
+    $rayco = (string) Str::uuid();
 
     $usuarios = [
       [
@@ -104,6 +112,103 @@ class UsuarioSeeder extends Seeder {
         'ciudad' => 'Santa Cruz de Tenerife',
         'codigo_postal' => '38002',
       ],
+      // Resto de asistentes, cuyas compras dan volumen de ventas a los eventos
+      [
+        'id_usuario' => $yaiza,
+        'nombre' => 'Yaiza',
+        'apellidos' => 'Perdomo Falcón',
+        'email' => 'yaiza@asistente.com',
+        'password' => Hash::make('password'),
+        'numero_telefono' => '600223344',
+        'calle' => 'Calle Mesa y López',
+        'vivienda' => '48',
+        'ciudad' => 'Las Palmas de Gran Canaria',
+        'codigo_postal' => '35010',
+      ],
+      [
+        'id_usuario' => $airam,
+        'nombre' => 'Airam',
+        'apellidos' => 'Cabrera Viera',
+        'email' => 'airam@asistente.com',
+        'password' => Hash::make('password'),
+        'numero_telefono' => '600334455',
+        'calle' => 'Calle Castillo',
+        'vivienda' => '31',
+        'ciudad' => 'Santa Cruz de Tenerife',
+        'codigo_postal' => '38003',
+      ],
+      [
+        'id_usuario' => $dacil,
+        'nombre' => 'Dácil',
+        'apellidos' => 'Betancort Ramírez',
+        'email' => 'dacil@asistente.com',
+        'password' => Hash::make('password'),
+        'numero_telefono' => '600556677',
+        'calle' => 'Calle Obispo Rey Redondo',
+        'vivienda' => '7',
+        'ciudad' => 'San Cristóbal de La Laguna',
+        'codigo_postal' => '38201',
+      ],
+      [
+        'id_usuario' => $nauzet,
+        'nombre' => 'Nauzet',
+        'apellidos' => 'Almeida Dorta',
+        'email' => 'nauzet@asistente.com',
+        'password' => Hash::make('password'),
+        'numero_telefono' => '600667788',
+        'calle' => 'Calle León y Castillo',
+        'vivienda' => '120',
+        'ciudad' => 'Telde',
+        'codigo_postal' => '35200',
+      ],
+      [
+        'id_usuario' => $guacimara,
+        'nombre' => 'Guacimara',
+        'apellidos' => 'Trujillo Suárez',
+        'email' => 'guacimara@asistente.com',
+        'password' => Hash::make('password'),
+        'numero_telefono' => '600889900',
+        'calle' => 'Calle Bravo Murillo',
+        'vivienda' => '16',
+        'ciudad' => 'Las Palmas de Gran Canaria',
+        'codigo_postal' => '35002',
+      ],
+      [
+        'id_usuario' => $jonay,
+        'nombre' => 'Jonay',
+        'apellidos' => 'Padrón Melián',
+        'email' => 'jonay@asistente.com',
+        'password' => Hash::make('password'),
+        'numero_telefono' => '600990011',
+        'calle' => 'Calle Doctor Guigou',
+        'vivienda' => '4',
+        'ciudad' => 'Santa Cruz de Tenerife',
+        'codigo_postal' => '38001',
+      ],
+      [
+        'id_usuario' => $idaira,
+        'nombre' => 'Idaira',
+        'apellidos' => 'Santana Cruz',
+        'email' => 'idaira@asistente.com',
+        'password' => Hash::make('password'),
+        'numero_telefono' => '601112233',
+        'calle' => 'Calle Juan Rejón',
+        'vivienda' => '55',
+        'ciudad' => 'Las Palmas de Gran Canaria',
+        'codigo_postal' => '35008',
+      ],
+      [
+        'id_usuario' => $rayco,
+        'nombre' => 'Rayco',
+        'apellidos' => 'Hernández Bethencourt',
+        'email' => 'rayco@asistente.com',
+        'password' => Hash::make('password'),
+        'numero_telefono' => '601223344',
+        'calle' => 'Avenida de Anaga',
+        'vivienda' => '27',
+        'ciudad' => 'Santa Cruz de Tenerife',
+        'codigo_postal' => '38001',
+      ],
     ];
 
     // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,
@@ -122,8 +227,16 @@ class UsuarioSeeder extends Seeder {
       ['id_usuario' => $candelaria, 'puntos' => 0],
       ['id_usuario' => $hector, 'puntos' => 0],
       ['id_usuario' => $lucia, 'puntos' => 260],
-      ['id_usuario' => $marcos, 'puntos' => 35],
+      ['id_usuario' => $marcos, 'puntos' => 21],
       ['id_usuario' => $nerea, 'puntos' => 0],
+      ['id_usuario' => $yaiza, 'puntos' => 300],
+      ['id_usuario' => $airam, 'puntos' => 456],
+      ['id_usuario' => $dacil, 'puntos' => 355],
+      ['id_usuario' => $nauzet, 'puntos' => 300],
+      ['id_usuario' => $guacimara, 'puntos' => 324],
+      ['id_usuario' => $jonay, 'puntos' => 606],
+      ['id_usuario' => $idaira, 'puntos' => 252],
+      ['id_usuario' => $rayco, 'puntos' => 471],
     ];
 
     // DB::table() no rellena las marcas de tiempo, eso lo hace Eloquent,

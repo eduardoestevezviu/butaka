@@ -3,6 +3,7 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompraService } from '../../core/services/compra.service';
 import { CarritoService } from '../../core/services/carrito.service';
+import { FacturaService } from '../../core/services/factura.service';
 import { Compra } from '../../core/models/compra.model';
 import { ESTADO_PAGO_COMPLETADO, ESTADO_PAGO_PENDIENTE } from '../../core/models/estado-pago.model';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -48,6 +49,7 @@ export class Compras {
   constructor(
     private compraService: CompraService,
     private carritoService: CarritoService,
+    private facturaService: FacturaService,
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar
@@ -177,6 +179,32 @@ export class Compras {
     }
 
     return compra.detalle_compras[0].tipo_entrada?.evento?.nombre ?? '';
+  }
+
+  /**
+   * Descarga el PDF de la factura. El navegador no puede pedirlo con un enlace
+   * porque la ruta exige el token, así que se trae el fichero y se provoca la
+   * descarga con un enlace temporal creado sobre la marcha
+   * @param idFactura
+   * @param numero
+   */
+  descargarFactura(idFactura: string, numero: string) {
+    this.facturaService.descargarPdf(idFactura).subscribe({
+      next: (fichero) => {
+        const direccion = URL.createObjectURL(fichero);
+        const enlace = document.createElement('a');
+
+        enlace.href = direccion;
+        enlace.download = `${numero}.pdf`;
+        enlace.click();
+
+        // La dirección temporal ocupa memoria hasta que se libera a mano
+        URL.revokeObjectURL(direccion);
+      },
+      error: () => {
+        this.snackBar.open('No se pudo descargar la factura', 'Cerrar', { duration: 4000 });
+      }
+    });
   }
 
   cambiarPagina(pagina: number) {

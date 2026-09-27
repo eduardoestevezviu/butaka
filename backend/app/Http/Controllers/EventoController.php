@@ -131,6 +131,9 @@ class EventoController extends Controller {
           'estadoEvento:id_estado_evento,estado_evento',
           'tipoEntradas:id_tipo_entrada,nombre,precio,aforo,vendidas,id_evento',
         ])
+        // Marca si el evento tiene ya su liquidación emitida, para que el panel
+        // sepa si debe ofrecer el botón de liquidar
+        ->withExists('factura as liquidado')
         ->orderBy('fecha', 'desc')
         ->paginate(config('butaka.eventos_por_pagina'));
 
@@ -280,6 +283,12 @@ class EventoController extends Controller {
         return $result->toResponse();
       }
 
+      if ($this->yaCelebrado($evento)) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('Un evento ya celebrado no se puede modificar');
+        return $result->toResponse();
+      }
+
       $datos = $this->validarActualizacion($request);
       $evento->update($datos);
 
@@ -292,6 +301,50 @@ class EventoController extends Controller {
       $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
       $result->setMessage(ResultResponse::MSG_VALIDATION_ERROR);
       $result->setData($e->errors());
+    } catch (\Exception $e) {
+      $result->setStatusCode(ResultResponse::HTTP_ERROR);
+      $result->setMessage(ResultResponse::MSG_ERROR);
+    }
+
+    return $result->toResponse();
+  }
+
+  // Emite la liquidación del evento, que es la factura con la que Butaka cobra
+  // su comisión al organizador y le liquida lo recaudado. Solo puede emitirse
+  // una vez celebrado el evento, y una sola vez
+  public function liquidar(Request $request, Evento $evento): JsonResponse {
+    $result = new ResultResponse();
+    try {
+      if (!$this->esPropietario($request, $evento)) {
+        $result->setStatusCode(ResultResponse::HTTP_FORBIDDEN);
+        $result->setMessage(ResultResponse::MSG_FORBIDDEN);
+        return $result->toResponse();
+      }
+
+      if ($evento->id_estado_evento === EstadoEvento::ESTADO_CANCELADO) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('Un evento cancelado no genera liquidación');
+        return $result->toResponse();
+      }
+
+      // No se liquida lo que todavía puede vender entradas
+      if (now()->lessThan($evento->fecha)) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('El evento aún no se ha celebrado');
+        return $result->toResponse();
+      }
+
+      if ($evento->factura()->exists()) {
+        $result->setStatusCode(ResultResponse::HTTP_CONFLICT);
+        $result->setMessage('Este evento ya está liquidado');
+        return $result->toResponse();
+      }
+
+      $factura = app(FacturaController::class)->emitirDeLiquidacion($evento);
+
+      $result->setStatusCode(ResultResponse::HTTP_CREATED);
+      $result->setMessage('Liquidación emitida');
+      $result->setData($factura);
     } catch (\Exception $e) {
       $result->setStatusCode(ResultResponse::HTTP_ERROR);
       $result->setMessage(ResultResponse::MSG_ERROR);
@@ -314,6 +367,14 @@ class EventoController extends Controller {
       if ($evento->id_estado_evento === EstadoEvento::ESTADO_CANCELADO) {
         $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
         $result->setMessage('El evento ya estaba cancelado');
+        return $result->toResponse();
+      }
+
+      // Cancelar algo que ya ocurrió obligaría a devolver entradas que los
+      // asistentes llegaron a disfrutar
+      if ($this->yaCelebrado($evento)) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('Un evento ya celebrado no se puede cancelar');
         return $result->toResponse();
       }
 
@@ -366,6 +427,12 @@ class EventoController extends Controller {
       if (!$this->esPropietario($request, $evento)) {
         $result->setStatusCode(ResultResponse::HTTP_FORBIDDEN);
         $result->setMessage(ResultResponse::MSG_FORBIDDEN);
+        return $result->toResponse();
+      }
+
+      if ($this->yaCelebrado($evento)) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('Un evento ya celebrado no se puede eliminar');
         return $result->toResponse();
       }
 
@@ -473,6 +540,12 @@ class EventoController extends Controller {
     } catch (\Exception $e) {
       // El aviso es secundario
     }
+  }
+
+  // Un evento que ya se ha celebrado es historia: no se retoca, no se cancela y
+  // no se elimina. Lo único que admite es consultarse y liquidarse
+  public function yaCelebrado(Evento $evento): bool {
+    return now()->greaterThan($evento->fecha);
   }
 
   private function esPropietario(Request $request, Evento $evento): bool {

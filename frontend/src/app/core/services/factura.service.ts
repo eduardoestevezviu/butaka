@@ -24,6 +24,17 @@ export class FacturaService {
   }
 
   /**
+   * Descarga el PDF de la factura. Se pide como binario porque la respuesta no
+   * es JSON, y con HttpClient en lugar de un enlace normal para que el
+   * interceptor pueda añadirle el token: un <a href> no lleva cabeceras
+   * @param id
+   * @returns
+   */
+  descargarPdf(id: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/pdf`, { responseType: 'blob' });
+  }
+
+  /**
    * Liquidaciones del organizador con sus totales. No se pagina, para que los
    * totales abarquen todas las liquidaciones y no solo las de la página
    * @param idEvento filtro opcional por evento

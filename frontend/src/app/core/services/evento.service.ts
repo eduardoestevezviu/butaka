@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { ApiResponse, Paginado } from '../models/api-response.model';
 import { Evento } from '../models/evento.model';
 import { VentasEvento } from '../models/ventas.model';
+import { Factura } from '../models/factura.model';
 
 @Injectable({
   providedIn: 'root',
@@ -85,6 +86,16 @@ export class EventoService {
    */
   cancelarEvento(id: string): Observable<ApiResponse<{ compras_anuladas: number; compras_con_incidencia: string[] }>> {
     return this.http.post<ApiResponse<{ compras_anuladas: number; compras_con_incidencia: string[] }>>(`${this.apiUrl}/${id}/cancelar`, {});
+  }
+
+  /**
+   * Emite la liquidación del evento, con la que el organizador cobra lo
+   * recaudado menos la comisión de Butaka
+   * @param id
+   * @returns
+   */
+  liquidarEvento(id: string): Observable<ApiResponse<Factura>> {
+    return this.http.post<ApiResponse<Factura>>(`${this.apiUrl}/${id}/liquidar`, {});
   }
 
   eliminarEvento(id: string): Observable<ApiResponse<null>> {

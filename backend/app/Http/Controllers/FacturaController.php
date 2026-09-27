@@ -11,6 +11,8 @@ use App\Models\TipoFactura;
 use App\Http\Responses\ResultResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FacturaController extends Controller {
 
@@ -86,14 +88,7 @@ class FacturaController extends Controller {
   public function show(Request $request, string $id): JsonResponse {
     $result = new ResultResponse();
     try {
-      $factura = Factura::with([
-        'tipoFactura:id_tipo_factura,tipo_factura',
-        'usuario:id_usuario,nombre,apellidos,email,calle,vivienda,ciudad,codigo_postal',
-        'compra:id_compra,importe_total,puntos_canjeados,fecha_pago',
-        'compra.detalleCompras.tipoEntrada:id_tipo_entrada,id_evento,nombre,precio',
-        'compra.detalleCompras.tipoEntrada.evento:id_evento,nombre,fecha',
-        'evento:id_evento,nombre,fecha',
-      ])->findOrFail($id);
+      $factura = $this->cargarFacturaCompleta($id);
 
       // La factura se localiza por un identificador de la URL, así que hay que
       // comprobar que el destinatario es quien la está pidiendo
@@ -120,6 +115,85 @@ class FacturaController extends Controller {
   // Emite el comprobante del asistente. No es un endpoint: lo invoca el
   // PagoController dentro de la transacción que confirma el pago, porque la
   // factura y la compra pagada tienen que nacer o fallar juntas
+  // Genera el documento PDF de la factura. Devuelve el fichero en lugar de un
+  // JSON, así que no usa ResultResponse
+  public function descargar(Request $request, string $id): Response|JsonResponse {
+    $result = new ResultResponse();
+    try {
+      $factura = $this->cargarFacturaCompleta($id);
+
+      if ($factura->id_usuario !== $request->user()->id_usuario) {
+        $result->setStatusCode(ResultResponse::HTTP_FORBIDDEN);
+        $result->setMessage(ResultResponse::MSG_FORBIDDEN);
+        return $result->toResponse();
+      }
+
+      $esLiquidacion = $factura->id_tipo_factura === TipoFactura::TIPO_LIQUIDACION;
+
+      // El descuento por puntos no se guarda en la factura: se deduce de la
+      // diferencia entre lo que suman las entradas y lo que se pagó
+      $descuentoPuntos = 0;
+      if (!$esLiquidacion) {
+        $suma = 0;
+        foreach ($factura->compra->detalleCompras as $linea) {
+          $suma = $suma + $linea->precio_unitario * $linea->cantidad;
+        }
+        $descuentoPuntos = round($suma - $factura->total, 2);
+      }
+
+      // Quien presta el servicio al asistente es el organizador del evento, así
+      // que la factura de compra deja constancia de que Butaka la expide en su
+      // nombre. En la liquidación es Butaka quien factura su propia comisión
+      $organizador = null;
+
+      if ($esLiquidacion) {
+        $destinatario = $factura->usuario->organizador->nombre_comercial;
+        $nifDestinatario = $factura->usuario->organizador->nif;
+        $tipoIva = config('butaka.iva_comision');
+      } else {
+        $destinatario = $factura->usuario->nombre . ' ' . $factura->usuario->apellidos;
+        $nifDestinatario = null;
+        $tipoIva = config('butaka.iva_entradas');
+        $organizador = $factura->compra->detalleCompras->first()->tipoEntrada->evento->organizador;
+      }
+
+      $pdf = Pdf::loadView('pdf.factura', [
+        'factura' => $factura,
+        'emisor' => config('butaka.emisor'),
+        'esLiquidacion' => $esLiquidacion,
+        'destinatario' => $destinatario,
+        'nifDestinatario' => $nifDestinatario,
+        'tipoIva' => $tipoIva,
+        'descuentoPuntos' => $descuentoPuntos,
+        'organizador' => $organizador,
+      ]);
+
+      return $pdf->download($factura->numero_factura . '.pdf');
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+      $result->setStatusCode(ResultResponse::HTTP_NOT_FOUND);
+      $result->setMessage(ResultResponse::MSG_NOT_FOUND);
+    } catch (\Exception $e) {
+      $result->setStatusCode(ResultResponse::HTTP_ERROR);
+      $result->setMessage(ResultResponse::MSG_ERROR);
+    }
+
+    return $result->toResponse();
+  }
+
+  // Carga la factura con todo lo que necesitan tanto el detalle como el PDF
+  private function cargarFacturaCompleta(string $id): Factura {
+    return Factura::with([
+      'tipoFactura:id_tipo_factura,tipo_factura',
+      'usuario:id_usuario,nombre,apellidos,email,calle,vivienda,ciudad,codigo_postal',
+      'usuario.organizador:id_usuario,nombre_comercial,nif',
+      'compra:id_compra,importe_total,puntos_canjeados,fecha_pago',
+      'compra.detalleCompras.tipoEntrada:id_tipo_entrada,id_evento,nombre,precio',
+      'compra.detalleCompras.tipoEntrada.evento:id_evento,nombre,fecha,id_usuario',
+      'compra.detalleCompras.tipoEntrada.evento.organizador:id_usuario,nombre_comercial,nif',
+      'evento:id_evento,nombre,fecha',
+    ])->findOrFail($id);
+  }
+
   public function emitirDeCompra(Compra $compra): Factura {
     $tipoIva = config('butaka.iva_entradas');
 

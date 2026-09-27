@@ -42,6 +42,9 @@ Route::middleware(['auth:api', CheckToken::using('organizador')])->group(functio
     // y avisar a los asistentes
     Route::post('/{evento}/cancelar', 'cancelar');
 
+    // POST /api/eventos/{id}/liquidar - Emitir la liquidación de un evento ya celebrado
+    Route::post('/{evento}/liquidar', 'liquidar');
+
     // DELETE /api/eventos/{id} - Eliminar un evento sin ventas
     Route::delete('/{evento}', 'destroy');
   });
@@ -159,6 +162,9 @@ Route::middleware(['auth:api', CheckToken::using('asistente')])->group(function 
 
     // GET /api/facturas/{id} - Detalle de una factura con su desglose
     Route::get('/{id}', 'show');
+
+    // GET /api/facturas/{id}/pdf - Descarga del documento en PDF
+    Route::get('/{id}/pdf', 'descargar');
   });
 
 
