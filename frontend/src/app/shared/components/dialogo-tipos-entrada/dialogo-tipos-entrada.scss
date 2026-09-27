@@ -1,0 +1,27 @@
+.aviso,
+.vacio {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+h3 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1rem;
+}
+
+// Cada entrada ocupa una fila con sus campos y sus botones al final
+.fila-tipo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+
+  mat-form-field {
+    flex: 1 1 160px;
+  }
+
+  .estrecho {
+    flex: 0 1 110px;
+  }
+}

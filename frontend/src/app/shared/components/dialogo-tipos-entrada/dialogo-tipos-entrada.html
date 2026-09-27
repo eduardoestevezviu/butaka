@@ -1,0 +1,79 @@
+<h2 mat-dialog-title>Entradas de {{ datos.evento.nombre }}</h2>
+
+<mat-dialog-content>
+  <p class="aviso">Cada entrada se guarda por separado con su propio botón.</p>
+
+  @if (formularios().length === 0) {
+    <p class="vacio">Este evento no tiene ninguna entrada a la venta.</p>
+  }
+
+  @for (fila of formularios(); track fila.tipo.id_tipo_entrada) {
+    <div class="fila-tipo" [formGroup]="fila.form">
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="estrecho">
+        <mat-label>Precio</mat-label>
+        <input matInput type="number" formControlName="precio">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="estrecho">
+        <mat-label>Aforo</mat-label>
+        <input matInput type="number" formControlName="aforo">
+        <mat-hint>{{ fila.tipo.vendidas }} vendidas</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="estrecho">
+        <mat-label>Oferta %</mat-label>
+        <input matInput type="number" formControlName="oferta">
+      </mat-form-field>
+
+      <button mat-icon-button [disabled]="ocupado()" (click)="actualizar(fila)">
+        <mat-icon>save</mat-icon>
+      </button>
+
+      <button mat-icon-button [disabled]="ocupado()" (click)="eliminar(fila)">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  }
+
+  <mat-divider></mat-divider>
+
+  <!-- Alta de una entrada nueva -->
+  <h3>Añadir entrada</h3>
+
+  <div class="fila-tipo" [formGroup]="nuevoForm">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="nombre">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="estrecho">
+      <mat-label>Precio</mat-label>
+      <input matInput type="number" formControlName="precio">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="estrecho">
+      <mat-label>Aforo</mat-label>
+      <input matInput type="number" formControlName="aforo">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="estrecho">
+      <mat-label>Oferta %</mat-label>
+      <input matInput type="number" formControlName="oferta">
+    </mat-form-field>
+
+    <button mat-icon-button [disabled]="ocupado()" (click)="agregar()">
+      <mat-icon>add</mat-icon>
+    </button>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <!-- Devuelve si se ha cambiado algo, para que el listado solo se recargue
+       cuando haga falta -->
+  <button mat-flat-button color="primary" [mat-dialog-close]="huboCambios()">Cerrar</button>
+</mat-dialog-actions>

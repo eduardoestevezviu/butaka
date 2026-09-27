@@ -1,1 +1,77 @@
-<p>gestion-eventos works!</p>
+<div class="gestion-container">
+  <div class="cabecera">
+    <h1>Mis eventos</h1>
+    <button mat-flat-button color="primary" (click)="nuevoEvento()">
+      <mat-icon>add</mat-icon>
+      Nuevo evento
+    </button>
+  </div>
+
+  @if (cargando()) {
+    <div class="spinner-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  @if (!cargando() && !error()) {
+    @if (eventos().length === 0) {
+      <p class="vacio">Todavía no has publicado ningún evento</p>
+    } @else {
+      @for (evento of eventos(); track evento.id_evento) {
+        <mat-card class="evento-card">
+          <mat-card-content>
+            <img [src]="evento.imagen_url" [alt]="evento.nombre">
+
+            <div class="datos">
+              <div class="cabecera">
+                <h2>{{ evento.nombre }}</h2>
+                @if (evento.id_estado_evento === estadoCancelado) {
+                  <mat-chip class="cancelado">Cancelado</mat-chip>
+                }
+              </div>
+
+              <p class="dato"><mat-icon>event</mat-icon> {{ evento.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+              <p class="dato"><mat-icon>location_on</mat-icon> {{ evento.ubicacion }}</p>
+              <p class="dato"><mat-icon>confirmation_number</mat-icon> {{ ocupacion(evento) }}</p>
+            </div>
+
+            <div class="acciones">
+              <button mat-stroked-button (click)="verVentas(evento)">
+                <mat-icon>bar_chart</mat-icon>
+                Ventas
+              </button>
+
+              <button mat-stroked-button (click)="gestionarEntradas(evento)">
+                <mat-icon>confirmation_number</mat-icon>
+                Entradas
+              </button>
+
+              <button mat-stroked-button (click)="editarEvento(evento)">
+                <mat-icon>edit</mat-icon>
+                Editar
+              </button>
+
+              <button mat-icon-button (click)="eliminarEvento(evento)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <div class="paginacion">
+        <button mat-icon-button [disabled]="paginaActual() === 1" (click)="cambiarPagina(paginaActual() - 1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span>{{ paginaActual() }} / {{ totalPaginas() }}</span>
+        <button mat-icon-button [disabled]="paginaActual() === totalPaginas()" (click)="cambiarPagina(paginaActual() + 1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+    }
+  }
+</div>

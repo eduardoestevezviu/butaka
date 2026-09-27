@@ -1,0 +1,110 @@
+<h2 mat-dialog-title>{{ edicion ? 'Editar evento' : 'Nuevo evento' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="eventoForm" id="formularioEvento" (ngSubmit)="guardar()">
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="nombre">
+      @if (eventoForm.get('nombre')?.hasError('required')) {
+        <mat-error>El nombre es obligatorio</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Descripción</mat-label>
+      <textarea matInput formControlName="descripcion" rows="3"></textarea>
+    </mat-form-field>
+
+    <div class="fila">
+      <mat-form-field appearance="outline">
+        <mat-label>Ubicación</mat-label>
+        <input matInput formControlName="ubicacion">
+        @if (eventoForm.get('ubicacion')?.hasError('required')) {
+          <mat-error>La ubicación es obligatoria</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fecha y hora</mat-label>
+        <input matInput type="datetime-local" formControlName="fecha">
+        @if (eventoForm.get('fecha')?.hasError('required')) {
+          <mat-error>La fecha es obligatoria</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <div class="fila">
+      <mat-form-field appearance="outline">
+        <mat-label>Categoría</mat-label>
+        <mat-select formControlName="id_categoria">
+          @for (c of categorias(); track c.id_categoria) {
+            <mat-option [value]="c.id_categoria">{{ c.categoria }}</mat-option>
+          }
+        </mat-select>
+        @if (eventoForm.get('id_categoria')?.hasError('required')) {
+          <mat-error>Elige una categoría</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Dirección de la imagen</mat-label>
+        <input matInput formControlName="imagen" placeholder="https://...">
+        <mat-hint>Si la dejas vacía se usará la imagen por defecto</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <!-- Los tipos de entrada solo se rellenan al crear, porque el evento aún no
+         existe y viajan con él en la misma petición -->
+    @if (!edicion) {
+      <mat-divider></mat-divider>
+
+      <div class="cabecera-tipos">
+        <h3>Entradas a la venta</h3>
+        <button mat-stroked-button type="button" (click)="agregarTipoEntrada()">
+          <mat-icon>add</mat-icon>
+          Añadir
+        </button>
+      </div>
+
+      <div formArrayName="tipo_entradas">
+        @for (grupo of tipoEntradas.controls; track $index) {
+          <div class="tipo-entrada" [formGroupName]="$index">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="nombre">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="estrecho">
+              <mat-label>Precio</mat-label>
+              <input matInput type="number" formControlName="precio">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="estrecho">
+              <mat-label>Aforo</mat-label>
+              <input matInput type="number" formControlName="aforo">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="estrecho">
+              <mat-label>Oferta %</mat-label>
+              <input matInput type="number" formControlName="oferta">
+            </mat-form-field>
+
+            <!-- El backend exige al menos un tipo de entrada, así que el primero no
+                 se puede quitar -->
+            <button mat-icon-button type="button" [disabled]="tipoEntradas.length === 1" (click)="quitarTipoEntrada($index)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close type="button">Cancelar</button>
+  <button mat-flat-button color="primary" type="submit" form="formularioEvento" [disabled]="guardando()">
+    {{ guardando() ? 'Guardando...' : (edicion ? 'Guardar' : 'Crear evento') }}
+  </button>
+</mat-dialog-actions>
