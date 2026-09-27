@@ -191,7 +191,15 @@ class CompraController extends Controller {
         ->sum('detalle_compras.cantidad');
 
       if (($yaCompradas + $cantidad) > $maximo) {
-        throw new \RuntimeException("No se pueden adquirir mas de {$maximo} entradas del mismo evento");
+        // El mensaje detalla lo que ya se tiene, porque el límite cuenta las
+        // compras anteriores y de otro modo resultaría incomprensible
+        $restantes = $maximo - $yaCompradas;
+
+        if ($restantes <= 0) {
+          throw new \RuntimeException("Ya tienes el máximo de {$maximo} entradas de este evento");
+        }
+
+        throw new \RuntimeException("Ya tienes {$yaCompradas} entradas de este evento y el máximo por persona es {$maximo}, así que solo puedes adquirir {$restantes} más");
       }
     }
   }

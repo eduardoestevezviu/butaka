@@ -61,6 +61,19 @@
                   }
                 </div>
 
+                <!-- Mientras la compra no esté pagada, se ofrece la pasarela -->
+                @if (compra.id_estado_pago === estadoPendiente) {
+                  <div class="pago">
+                    <span class="secundario">Esta compra está pendiente de pago</span>
+                    <button mat-flat-button color="primary"
+                            [disabled]="pagando() === compra.id_compra"
+                            (click)="pagar(compra)">
+                      <mat-icon>credit_card</mat-icon>
+                      {{ pagando() === compra.id_compra ? 'Abriendo...' : 'Pagar ahora' }}
+                    </button>
+                  </div>
+                }
+
                 @if (detalle.factura) {
                   <div class="factura">
                     <span>Factura {{ detalle.factura.numero_factura }}</span>

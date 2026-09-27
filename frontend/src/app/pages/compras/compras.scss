@@ -58,6 +58,15 @@ mat-panel-description {
   --mdc-chip-elevated-container-color: var(--mat-sys-primary-container);
 }
 
+// Aviso y botón de pago de una compra pendiente
+.pago {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.75rem;
+}
+
 .factura {
   display: flex;
   align-items: center;

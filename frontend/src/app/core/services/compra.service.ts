@@ -35,6 +35,26 @@ export class CompraService {
   }
 
   /**
+   * Abre la pasarela de pago para una compra pendiente. Devuelve la dirección
+   * de Stripe a la que hay que llevar al navegador
+   * @param id
+   * @returns
+   */
+  iniciarPago(id: string): Observable<ApiResponse<{ url: string }>> {
+    return this.http.post<ApiResponse<{ url: string }>>(`/api/pagos/${id}`, {});
+  }
+
+  /**
+   * Confirma con Stripe que la compra está pagada. Es el backend quien lo
+   * comprueba, no basta con que el navegador vuelva de la pasarela
+   * @param id
+   * @returns
+   */
+  verificarPago(id: string): Observable<ApiResponse<Compra>> {
+    return this.http.post<ApiResponse<Compra>>(`/api/pagos/${id}/verificar`, {});
+  }
+
+  /**
    * Convierte el carrito activo en una compra. El importe lo recalcula el
    * backend con los precios vigentes, aquí solo viajan los puntos a canjear
    * @param datos

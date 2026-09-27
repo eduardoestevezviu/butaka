@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\CompraController;
+use App\Http\Controllers\PagoController;
 use App\Http\Controllers\DetalleCarritoController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\FacturaController;
@@ -130,6 +131,20 @@ Route::middleware(['auth:api', CheckToken::using('asistente')])->group(function 
 
     // POST /api/compras - Convertir el carrito activo en una compra pendiente de pago
     Route::post('/', 'store');
+  });
+
+
+  /**
+   * RUTAS PAGOS
+   */
+  Route::controller(PagoController::class)->prefix('pagos')->group(function () {
+
+    // POST /api/pagos/{compra} - Abre la pasarela y devuelve su dirección
+    Route::post('/{compra}', 'store');
+
+    // POST /api/pagos/{compra}/verificar - Confirma el pago, concede los puntos
+    // y emite la factura de la compra
+    Route::post('/{compra}/verificar', 'verificar');
   });
 
 

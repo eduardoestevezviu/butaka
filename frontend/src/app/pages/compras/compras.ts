@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CompraService } from '../../core/services/compra.service';
 import { Compra } from '../../core/models/compra.model';
 import { ESTADO_PAGO_COMPLETADO, ESTADO_PAGO_PENDIENTE } from '../../core/models/estado-pago.model';
@@ -9,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-compras',
@@ -38,12 +40,84 @@ export class Compras {
   detalles = signal<Record<string, Compra>>({});
 
   estadoPendiente = ESTADO_PAGO_PENDIENTE;
+  // Compra cuyo pago se está abriendo, para bloquear solo su botón
+  pagando = signal<string | null>(null);
   estadoCompletado = ESTADO_PAGO_COMPLETADO;
 
-  constructor(private compraService: CompraService) { }
+  constructor(
+    private compraService: CompraService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private snackBar: MatSnackBar
+  ) { }
 
   ngOnInit() {
     this.cargarCompras();
+    this.comprobarVueltaDeStripe();
+  }
+
+  /**
+   * Stripe devuelve al usuario a esta pantalla con parámetros en la dirección.
+   * Si trae el identificador de la sesión, se le pide al backend que confirme
+   * el pago; si el usuario canceló, solo se le avisa
+   */
+  comprobarVueltaDeStripe() {
+    const parametros = this.route.snapshot.queryParamMap;
+
+    if (parametros.get('pago') === 'cancelado') {
+      this.snackBar.open('Has cancelado el pago. La compra sigue pendiente', 'Cerrar', { duration: 5000 });
+      this.limpiarParametros();
+      return;
+    }
+
+    const idCompra = parametros.get('id_compra');
+
+    if (parametros.get('session_id') && idCompra) {
+      this.verificarPago(idCompra);
+    }
+  }
+
+  verificarPago(idCompra: string) {
+    this.compraService.verificarPago(idCompra).subscribe({
+      next: (respuesta) => {
+        this.snackBar.open(respuesta.message, 'Cerrar', { duration: 5000 });
+        // El detalle guardado es el de antes de pagar, así que se descarta
+        this.detalles.set({});
+        this.cargarCompras();
+        this.limpiarParametros();
+      },
+      error: (err) => {
+        this.snackBar.open(err.error?.message ?? 'No se pudo confirmar el pago', 'Cerrar', { duration: 5000 });
+        this.limpiarParametros();
+      }
+    });
+  }
+
+  /**
+   * Quita los parámetros de la dirección para que al recargar la página no se
+   * vuelva a intentar confirmar el mismo pago
+   */
+  limpiarParametros() {
+    this.router.navigate([], { queryParams: {} });
+  }
+
+  /**
+   * Lleva al usuario a la pasarela de Stripe
+   * @param compra
+   */
+  pagar(compra: Compra) {
+    this.pagando.set(compra.id_compra);
+
+    this.compraService.iniciarPago(compra.id_compra).subscribe({
+      next: (respuesta) => {
+        // Se sale de la aplicación, así que no hace falta desbloquear el botón
+        window.location.href = respuesta.data.url;
+      },
+      error: (err) => {
+        this.pagando.set(null);
+        this.snackBar.open(err.error?.message ?? 'No se pudo abrir la pasarela de pago', 'Cerrar', { duration: 4000 });
+      }
+    });
   }
 
   cargarCompras() {

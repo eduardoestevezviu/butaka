@@ -164,8 +164,9 @@ export class Carrito {
   }
 
   /**
-   * Convierte el carrito en una compra. El importe lo recalcula el backend con
-   * los precios vigentes, aquí solo viajan los puntos a canjear
+   * Convierte el carrito en una compra y lleva directamente a la pasarela de
+   * pago. El importe lo recalcula el backend con los precios vigentes, aquí
+   * solo viajan los puntos a canjear
    */
   comprar() {
     this.procesando.set(true);
@@ -173,13 +174,33 @@ export class Carrito {
     this.compraService.crearCompra({
       puntos_canjeados: this.puntosACanjear()
     }).subscribe({
-      next: () => {
+      next: (respuesta) => {
+        // El carrito ya está convertido, así que se refresca el contador
         this.carritoService.cargarCarrito();
-        this.router.navigate(['/compras']);
+        this.irAPagar(respuesta.data.id_compra);
       },
       error: (err) => {
         this.procesando.set(false);
         this.snackBar.open(err.error?.message ?? 'No se pudo completar la compra', 'Cerrar', { duration: 5000 });
+      }
+    });
+  }
+
+  /**
+   * Abre la pasarela para la compra recién creada. Si no se pudiera abrir, la
+   * compra ya existe y queda pendiente, así que se envía a "Mis compras" para
+   * que el asistente pueda pagarla desde allí
+   * @param idCompra
+   */
+  private irAPagar(idCompra: string) {
+    this.compraService.iniciarPago(idCompra).subscribe({
+      next: (respuesta) => {
+        window.location.href = respuesta.data.url;
+      },
+      error: () => {
+        this.procesando.set(false);
+        this.snackBar.open('Tu compra se ha registrado, pero no se pudo abrir el pago. Puedes pagarla desde Mis compras', 'Cerrar', { duration: 6000 });
+        this.router.navigate(['/compras']);
       }
     });
   }
