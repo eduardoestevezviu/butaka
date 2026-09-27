@@ -18,6 +18,30 @@
       </mat-card-content>
     </mat-card>
 
+    <!-- Posición en el ranking, solo para organizadores -->
+    @if (posicionamiento(); as posicion) {
+      <mat-card class="tarjeta puntos">
+        <mat-card-content>
+          <mat-icon>leaderboard</mat-icon>
+          <div>
+            @if (posicion.posicion === null) {
+              <span class="etiqueta">
+                Todavía no tienes eventos con los que entrar en el ranking de organizadores
+              </span>
+            } @else {
+              <span class="posicion">
+                Posición {{ posicion.posicion }}/{{ posicion.total_organizadores }} en el ránking de organizadores
+              </span>
+              <span class="etiqueta">
+                {{ posicion.ocupacion_media }} % de ocupación media ·
+                {{ posicion.entradas_vendidas }} entradas vendidas
+              </span>
+            }
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+
     <!-- Datos personales -->
     <mat-card class="tarjeta">
       <mat-card-content>

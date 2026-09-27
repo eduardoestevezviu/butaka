@@ -4,7 +4,9 @@ import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators, 
 import { UsuarioService } from '../../core/services/usuario.service';
 import { AuthService } from '../../core/services/auth.service';
 import { CarritoService } from '../../core/services/carrito.service';
+import { RankingService } from '../../core/services/ranking.service';
 import { Usuario } from '../../core/models/usuario.model';
+import { Posicionamiento } from '../../core/models/posicionamiento.model';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -32,6 +34,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 })
 export class Perfil {
   usuario = signal<Usuario | null>(null);
+  posicionamiento = signal<Posicionamiento | null>(null);
   cargando = signal(true);
   guardando = signal(false);
   guardandoFiscales = signal(false);
@@ -43,6 +46,7 @@ export class Perfil {
     private usuarioService: UsuarioService,
     private authService: AuthService,
     private carritoService: CarritoService,
+    private rankingService: RankingService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {
@@ -104,6 +108,10 @@ export class Perfil {
         this.usuario.set(respuesta.data);
         this.rellenarFormularios(respuesta.data);
         this.cargando.set(false);
+
+        if (respuesta.data.organizador) {
+          this.cargarPosicionamiento();
+        }
       },
       error: () => {
         this.snackBar.open('No se pudo cargar el perfil', 'Cerrar', { duration: 4000 });
@@ -137,6 +145,18 @@ export class Perfil {
         iban: usuario.organizador.iban,
       });
     }
+  }
+
+  /**
+   * Posición del organizador en el ranking de Butaka. Solo se pide si el usuario
+   * es organizador, porque es la única figura que entra en la clasificación
+   */
+  cargarPosicionamiento() {
+    this.rankingService.getPosicionamiento().subscribe({
+      next: (respuesta) => this.posicionamiento.set(respuesta.data ?? null),
+      // Si falla, la tarjeta no se pinta y el resto del perfil funciona igual
+      error: () => this.posicionamiento.set(null)
+    });
   }
 
   esOrganizador(): boolean {

@@ -62,10 +62,6 @@ export const routes: Routes = [
         path: 'facturacion',
         loadComponent: () => import('./pages/gestion/facturacion/facturacion').then(m => m.Facturacion)
       },
-      {
-        path: 'ranking',
-        loadComponent: () => import('./pages/gestion/ranking/ranking').then(m => m.Ranking)
-      },
     ]
   },
 

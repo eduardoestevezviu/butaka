@@ -34,6 +34,14 @@
     font-weight: 600;
   }
 
+  // Es una frase, no una cifra suelta, así que va más pequeña que .cifra para
+  // que la tarjeta no quede descuadrada
+  .posicion {
+    display: block;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+
   .etiqueta {
     font-size: 0.9rem;
     color: var(--mat-sys-on-surface-variant);
