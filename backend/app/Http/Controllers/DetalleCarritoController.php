@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Carrito;
 use App\Models\DetalleCarrito;
-use App\Models\EstadoCarrito;
 use App\Models\TipoEntrada;
 use App\Http\Responses\ResultResponse;
 use Illuminate\Http\Request;
@@ -16,7 +15,7 @@ class DetalleCarritoController extends Controller {
   public function carrito(Request $request): JsonResponse {
     $result = new ResultResponse();
     try {
-      $carrito = $this->buscarCarritoActivo($request->user()->id_usuario);
+      $carrito = $this->buscarCarrito($request->user()->id_usuario);
 
       if ($carrito) {
         $carrito->load([
@@ -52,7 +51,7 @@ class DetalleCarritoController extends Controller {
       }
 
       // Si el asistente no tiene carrito activo se le crea uno
-      $carrito = $this->buscarCarritoActivo($idUsuario) ?? Carrito::create(['id_usuario' => $idUsuario]);
+      $carrito = $this->buscarCarrito($idUsuario) ?? Carrito::create(['id_usuario' => $idUsuario]);
 
       // Se realiza así por la clave compuesta, no se puede usar updateOrCreate
       $detalle = DetalleCarrito::where('id_carrito', $carrito->id_carrito)
@@ -95,7 +94,7 @@ class DetalleCarritoController extends Controller {
   public function destroy(Request $request, TipoEntrada $tipoEntrada): JsonResponse {
     $result = new ResultResponse();
     try {
-      $carrito = $this->buscarCarritoActivo($request->user()->id_usuario);
+      $carrito = $this->buscarCarrito($request->user()->id_usuario);
 
       if (!$carrito) {
         $result->setStatusCode(ResultResponse::HTTP_NOT_FOUND);
@@ -107,9 +106,6 @@ class DetalleCarritoController extends Controller {
         ->where('id_tipo_entrada', $tipoEntrada->id_tipo_entrada)
         ->delete();
 
-      // Si el carrito se queda sin líneas se elimina también
-      $this->eliminarCarritoSiVacio($carrito);
-
       $result->setStatusCode(ResultResponse::HTTP_OK);
       $result->setMessage(ResultResponse::MSG_DELETED);
     } catch (\Exception $e) {
@@ -120,18 +116,10 @@ class DetalleCarritoController extends Controller {
     return $result->toResponse();
   }
 
-  // Localiza el único carrito en estado activo del asistente
-  private function buscarCarritoActivo(string $idUsuario) {
-    return Carrito::where('id_usuario', $idUsuario)
-      ->where('id_estado_carrito', EstadoCarrito::ESTADO_ACTIVO)
-      ->first();
-  }
-
-  // Elimina el carrito cuando ya no le queda ninguna linea
-  private function eliminarCarritoSiVacio(Carrito $carrito): void {
-    if ($carrito->detalleCarritos()->count() === 0) {
-      $carrito->delete();
-    }
+  // Localiza el carrito del asistente, que es único y permanente. Se vacía al
+  // comprar o al quitar líneas, pero no desaparece
+  private function buscarCarrito(string $idUsuario) {
+    return Carrito::where('id_usuario', $idUsuario)->first();
   }
 
   private function validarDetalleCarrito(Request $request) {

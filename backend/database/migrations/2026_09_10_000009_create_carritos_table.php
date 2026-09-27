@@ -12,17 +12,15 @@ return new class extends Migration {
     Schema::create('carritos', function (Blueprint $table) {
       $table->uuid('id_carrito')->primary()->default(DB::raw('(UUID())'));
 
-      // Asistente propietario del carrito
-      $table->uuid('id_usuario');
-
-      // Todo carrito nace activo y pasa a convertido al generarse la compra
-      $table->unsignedInteger('id_estado_carrito')->default(1);
+      // Asistente propietario del carrito. Es único: el carrito acompaña al
+      // asistente durante toda su vida en la plataforma, y sus líneas entran y
+      // salen a medida que añade o compra entradas
+      $table->uuid('id_usuario')->unique();
 
       $table->timestamps();
       $table->softDeletes();
 
       $table->foreign('id_usuario')->references('id_usuario')->on('asistentes')->onDelete('cascade')->onUpdate('cascade');
-      $table->foreign('id_estado_carrito')->references('id_estado_carrito')->on('estado_carritos')->onDelete('restrict')->onUpdate('cascade');
     });
   }
 

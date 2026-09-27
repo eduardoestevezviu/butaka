@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Compra;
+use App\Models\EstadoEvento;
 use App\Models\EstadoPago;
 use App\Http\Responses\ResultResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Stripe\Checkout\Session;
+use Stripe\Refund;
 use Stripe\Stripe;
 
 class PagoController extends Controller {
@@ -28,6 +30,14 @@ class PagoController extends Controller {
       if ($compra->id_estado_pago !== EstadoPago::ESTADO_PENDIENTE) {
         $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
         $result->setMessage('Esta compra no está pendiente de pago');
+        return $result->toResponse();
+      }
+
+      // Cobrar por un evento cancelado obligaría a devolver el dinero acto
+      // seguido, así que el pago se rechaza
+      if ($this->esDeEventoCancelado($compra)) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('El evento de esta compra ha sido cancelado');
         return $result->toResponse();
       }
 
@@ -70,6 +80,44 @@ class PagoController extends Controller {
     }
 
     return $result->toResponse();
+  }
+
+  // Indica si alguna de las entradas de la compra pertenece a un evento cancelado
+  private function esDeEventoCancelado(Compra $compra): bool {
+    $compra->load('detalleCompras.tipoEntrada.evento:id_evento,id_estado_evento');
+
+    foreach ($compra->detalleCompras as $detalle) {
+      $evento = $detalle->tipoEntrada->evento;
+
+      if ($evento->id_estado_evento === EstadoEvento::ESTADO_CANCELADO) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Devuelve por Stripe el importe de una compra ya pagada. Lo usa la cancelación
+  // de eventos, y se deja aquí porque es este controlador el que trata con la
+  // pasarela. Lanza una excepción si el reembolso no se puede emitir
+  public function reembolsar(Compra $compra): void {
+    if ($compra->session_id === null) {
+      throw new \RuntimeException('La compra no tiene ningún pago que devolver');
+    }
+
+    Stripe::setApiKey(config('services.stripe.secret'));
+
+    // El cobro no se identifica con la sesión sino con la intención de pago que
+    // esta generó, que es lo que Stripe sabe reembolsar
+    $session = Session::retrieve($compra->session_id);
+
+    if ($session->payment_intent === null) {
+      throw new \RuntimeException('La compra no llegó a cobrarse');
+    }
+
+    Refund::create([
+      'payment_intent' => $session->payment_intent,
+    ]);
   }
 
   // Comprueba en Stripe si la compra está pagada y, en ese caso, la completa:

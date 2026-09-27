@@ -55,9 +55,21 @@
                 Editar
               </button>
 
-              <button mat-icon-button (click)="eliminarEvento(evento)">
-                <mat-icon>delete</mat-icon>
-              </button>
+              <!-- Un evento sin ventas se elimina sin más. Si ya ha vendido
+                   entradas hay que cancelarlo, para devolver el dinero y avisar
+                   a los asistentes. Si ya está cancelado, no se ofrece ninguna -->
+              @if (evento.id_estado_evento !== estadoCancelado) {
+                @if (vendidas(evento) === 0) {
+                  <button mat-icon-button (click)="eliminarEvento(evento)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                } @else {
+                  <button mat-stroked-button (click)="cancelarEvento(evento)">
+                    <mat-icon>event_busy</mat-icon>
+                    Cancelar
+                  </button>
+                }
+              }
             </div>
           </mat-card-content>
         </mat-card>

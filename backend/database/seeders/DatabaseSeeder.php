@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder {
     $this->call([
       CategoriaSeeder::class,
       EstadoEventoSeeder::class,
-      EstadoCarritoSeeder::class,
       EstadoPagoSeeder::class,
       TipoFacturaSeeder::class,
       RolSeeder::class,

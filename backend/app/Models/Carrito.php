@@ -16,7 +16,6 @@ class Carrito extends Model {
 
   protected $fillable = [
     'id_usuario',
-    'id_estado_carrito',
   ];
 
   // El borrado lógico es un detalle interno, no se publica en la API
@@ -42,9 +41,6 @@ class Carrito extends Model {
     return $this->belongsTo(Asistente::class, 'id_usuario', 'id_usuario');
   }
 
-  public function estadoCarrito() {
-    return $this->belongsTo(EstadoCarrito::class, 'id_estado_carrito', 'id_estado_carrito');
-  }
 
   public function detalleCarritos() {
     return $this->hasMany(DetalleCarrito::class, 'id_carrito', 'id_carrito');

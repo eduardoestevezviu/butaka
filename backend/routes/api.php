@@ -38,6 +38,10 @@ Route::middleware(['auth:api', CheckToken::using('organizador')])->group(functio
     // PUT /api/eventos/{id} - Actualizar los datos generales de un evento
     Route::put('/{evento}', 'update');
 
+    // POST /api/eventos/{id}/cancelar - Cancelar el evento, devolver las compras
+    // y avisar a los asistentes
+    Route::post('/{evento}/cancelar', 'cancelar');
+
     // DELETE /api/eventos/{id} - Eliminar un evento sin ventas
     Route::delete('/{evento}', 'destroy');
   });

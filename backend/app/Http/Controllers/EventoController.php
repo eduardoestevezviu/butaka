@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CancelacionMail;
+use App\Models\Compra;
+use App\Models\DetalleCarrito;
 use App\Models\DetalleCompra;
 use App\Models\EstadoPago;
 use App\Models\Evento;
@@ -11,6 +14,7 @@ use App\Http\Responses\ResultResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class EventoController extends Controller {
 
@@ -296,6 +300,66 @@ class EventoController extends Controller {
     return $result->toResponse();
   }
 
+  // Cancela el evento, devuelve el dinero de las compras ya pagadas, libera el
+  // aforo, restituye los puntos y avisa por correo a los asistentes
+  public function cancelar(Request $request, Evento $evento): JsonResponse {
+    $result = new ResultResponse();
+    try {
+      if (!$this->esPropietario($request, $evento)) {
+        $result->setStatusCode(ResultResponse::HTTP_FORBIDDEN);
+        $result->setMessage(ResultResponse::MSG_FORBIDDEN);
+        return $result->toResponse();
+      }
+
+      if ($evento->id_estado_evento === EstadoEvento::ESTADO_CANCELADO) {
+        $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
+        $result->setMessage('El evento ya estaba cancelado');
+        return $result->toResponse();
+      }
+
+      $compras = $this->comprasDelEvento($evento);
+
+      // Compras que no se han podido devolver, para que el organizador sepa
+      // cuáles hay que revisar a mano
+      $fallidas = [];
+
+      foreach ($compras as $compra) {
+        $pagada = $compra->id_estado_pago === EstadoPago::ESTADO_COMPLETADO;
+
+        // El reembolso es una llamada de red, así que se hace antes de abrir la
+        // transacción. Si falla, esa compra se deja como está y se sigue con el
+        // resto: Stripe no puede participar en una transacción de la base de datos
+        if ($pagada) {
+          try {
+            app(PagoController::class)->reembolsar($compra);
+          } catch (\Exception $e) {
+            $fallidas[] = $compra->id_compra;
+            continue;
+          }
+        }
+
+        $this->anularCompra($compra, $pagada);
+        $this->avisarDeLaCancelacion($compra, $evento, $pagada);
+      }
+
+      $this->vaciarDeLosCarritos($evento);
+
+      $evento->update(['id_estado_evento' => EstadoEvento::ESTADO_CANCELADO]);
+
+      $result->setStatusCode(ResultResponse::HTTP_OK);
+      $result->setMessage('Evento cancelado y compras devueltas');
+      $result->setData([
+        'compras_anuladas' => count($compras) - count($fallidas),
+        'compras_con_incidencia' => $fallidas,
+      ]);
+    } catch (\Exception $e) {
+      $result->setStatusCode(ResultResponse::HTTP_ERROR);
+      $result->setMessage(ResultResponse::MSG_ERROR);
+    }
+
+    return $result->toResponse();
+  }
+
   public function destroy(Request $request, Evento $evento): JsonResponse {
     $result = new ResultResponse();
     try {
@@ -356,6 +420,59 @@ class EventoController extends Controller {
         $consulta->where('id_estado_pago', $estado);
       })
       ->get();
+  }
+
+  // Compras que incluyen entradas del evento y que aún no se han devuelto
+  private function comprasDelEvento(Evento $evento) {
+    return Compra::whereHas('detalleCompras.tipoEntrada', function ($consulta) use ($evento) {
+      $consulta->where('id_evento', $evento->id_evento);
+    })
+      ->where('id_estado_pago', '!=', EstadoPago::ESTADO_REEMBOLSADO)
+      ->with(['detalleCompras.tipoEntrada', 'asistente.usuario'])
+      ->get();
+  }
+
+  // Quita del carrito de todos los asistentes las entradas del evento, para que
+  // nadie encuentre en su cesta algo que ya no se puede comprar
+  private function vaciarDeLosCarritos(Evento $evento): void {
+    $idsTipos = TipoEntrada::where('id_evento', $evento->id_evento)->pluck('id_tipo_entrada');
+
+    DetalleCarrito::whereIn('id_tipo_entrada', $idsTipos)->delete();
+  }
+
+  // Deja la compra como devuelta y restituye los puntos. El contador de vendidas
+  // no se toca: el evento cancelado no vuelve a estar a la venta, y rebajarlo
+  // borraría el dato de cuántas entradas se habían colocado
+  private function anularCompra(Compra $compra, bool $pagada): void {
+    DB::transaction(function () use ($compra, $pagada) {
+      $asistente = $compra->asistente;
+
+      if ($compra->puntos_canjeados > 0) {
+        $asistente->increment('puntos', $compra->puntos_canjeados);
+      }
+
+      // Los puntos ganados solo existen si la compra llegó a pagarse, y no
+      // pueden conservarse por un evento que no se va a celebrar
+      if ($pagada && $compra->puntos_ganados > 0) {
+        $asistente->decrement('puntos', $compra->puntos_ganados);
+      }
+
+      $compra->update([
+        'id_estado_pago' => EstadoPago::ESTADO_REEMBOLSADO,
+        'puntos_ganados' => 0,
+      ]);
+    });
+  }
+
+  // Avisa al asistente. Un fallo del servidor de correo no debe interrumpir la
+  // cancelación, que ya está hecha y con el dinero devuelto
+  private function avisarDeLaCancelacion(Compra $compra, Evento $evento, bool $pagada): void {
+    try {
+      $usuario = $compra->asistente->usuario;
+      Mail::to($usuario->email)->send(new CancelacionMail($usuario, $evento, $pagada));
+    } catch (\Exception $e) {
+      // El aviso es secundario
+    }
   }
 
   private function esPropietario(Request $request, Evento $evento): bool {

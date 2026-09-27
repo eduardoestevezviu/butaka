@@ -12,8 +12,8 @@ class CarritoSeeder extends Seeder {
 
     // Carritos activos, para poder mostrar la cesta con contenido al iniciar sesion
     $carritos = [
-      ['id_usuario' => $u['lucia@asistente.com'], 'id_estado_carrito' => 1],
-      ['id_usuario' => $u['marcos@asistente.com'], 'id_estado_carrito' => 1],
+      ['id_usuario' => $u['lucia@asistente.com']],
+      ['id_usuario' => $u['marcos@asistente.com']],
     ];
 
     foreach ($carritos as $carrito) {

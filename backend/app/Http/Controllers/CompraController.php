@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Carrito;
 use App\Models\Compra;
+use App\Models\DetalleCarrito;
 use App\Models\DetalleCompra;
-use App\Models\EstadoCarrito;
+use App\Models\EstadoEvento;
 use App\Models\EstadoPago;
+use App\Models\Evento;
 use App\Models\TipoEntrada;
 use App\Http\Responses\ResultResponse;
 use Illuminate\Http\Request;
@@ -69,35 +71,57 @@ class CompraController extends Controller {
     return $result->toResponse();
   }
 
-  // Convierte el carrito activo del asistente en una compra pendiente de pago
+  // Convierte en una compra pendiente de pago las entradas que el asistente
+  // tiene en el carrito de un evento concreto
   public function store(Request $request): JsonResponse {
     $result = new ResultResponse();
     try {
       $datos = $this->validarCompra($request);
       $asistente = $request->user()->asistente;
 
-      $carrito = $this->buscarCarritoActivo($asistente->id_usuario);
+      $carrito = $this->buscarCarrito($asistente->id_usuario);
 
       if (!$carrito || $carrito->detalleCarritos->isEmpty()) {
         $result->setStatusCode(ResultResponse::HTTP_UNPROCESSABLE);
-        $result->setMessage('No hay ningún carrito activo con entradas');
+        $result->setMessage('No tienes entradas en el carrito');
         return $result->toResponse();
       }
 
       $compra = DB::transaction(function () use ($carrito, $asistente, $datos) {
         // Se bloquean las filas de los tipos de entrada implicados hasta el final
         // de la transacción, de modo que dos compras simultáneas no puedan vender
-        // la misma entrada
+        // la misma entrada. Solo se toman los del evento que se está pagando
         $tipos = TipoEntrada::whereIn('id_tipo_entrada', $carrito->detalleCarritos->pluck('id_tipo_entrada'))
+          ->where('id_evento', $datos['id_evento'])
           ->lockForUpdate()
           ->get()
           ->keyBy('id_tipo_entrada');
 
-        $this->comprobarDisponibilidad($carrito, $tipos);
-        $this->comprobarLimitePorEvento($carrito, $tipos, $asistente->id_usuario);
+        // Las líneas del carrito que pertenecen a ese evento
+        $lineas = [];
+        foreach ($carrito->detalleCarritos as $detalle) {
+          if ($tipos->has($detalle->id_tipo_entrada)) {
+            $lineas[] = $detalle;
+          }
+        }
+
+        if (empty($lineas)) {
+          throw new \RuntimeException('No tienes entradas de ese evento en el carrito');
+        }
+
+        // El catálogo no ofrece eventos cancelados, pero pueden haberse quedado
+        // en el carrito de quien los añadió antes de la cancelación
+        $evento = Evento::find($datos['id_evento']);
+
+        if ($evento->id_estado_evento === EstadoEvento::ESTADO_CANCELADO) {
+          throw new \RuntimeException('Este evento ha sido cancelado');
+        }
+
+        $this->comprobarDisponibilidad($lineas, $tipos);
+        $this->comprobarLimitePorEvento($lineas, $tipos, $asistente->id_usuario);
 
         // El importe se recalcula con los precios vigentes, no con los del carrito
-        $bruto = $this->calcularBruto($carrito, $tipos);
+        $bruto = $this->calcularBruto($lineas, $tipos);
         $puntos = $datos['puntos_canjeados'] ?? 0;
         $descuento = $this->calcularDescuento($puntos, $bruto, $asistente->puntos);
 
@@ -109,16 +133,13 @@ class CompraController extends Controller {
           'puntos_canjeados' => $puntos,
         ]);
 
-        $this->generarDetalleCompra($compra, $carrito, $tipos);
+        $this->generarDetalleCompra($compra, $lineas, $tipos);
 
         // Los puntos canjeados se descuentan al reservar, para que no puedan
         // gastarse dos veces en dos compras pendientes
         if ($puntos > 0) {
           $asistente->decrement('puntos', $puntos);
         }
-
-        // El carrito queda convertido y no puede volver a usarse
-        $carrito->update(['id_estado_carrito' => EstadoCarrito::ESTADO_CONVERTIDO]);
 
         return $compra;
       });
@@ -144,16 +165,19 @@ class CompraController extends Controller {
     return $result->toResponse();
   }
 
-  private function buscarCarritoActivo(string $idUsuario) {
+  // Localiza el carrito del asistente. Cada uno tiene el suyo y es siempre el
+  // mismo: las líneas entran al añadir entradas y salen al comprarlas
+  private function buscarCarrito(string $idUsuario) {
     return Carrito::where('id_usuario', $idUsuario)
-      ->where('id_estado_carrito', EstadoCarrito::ESTADO_ACTIVO)
       ->with('detalleCarritos')
       ->first();
   }
 
   // Comprueba que queda aforo suficiente en cada tipo de entrada del carrito
-  private function comprobarDisponibilidad(Carrito $carrito, $tipos): void {
-    foreach ($carrito->detalleCarritos as $detalle) {
+  // Recibe las líneas del carrito que se van a comprar, no el carrito entero,
+  // porque una compra abarca únicamente las entradas de un evento
+  private function comprobarDisponibilidad(array $lineas, $tipos): void {
+    foreach ($lineas as $detalle) {
       $tipo = $tipos[$detalle->id_tipo_entrada];
 
       if ($detalle->cantidad > ($tipo->aforo - $tipo->vendidas)) {
@@ -164,12 +188,12 @@ class CompraController extends Controller {
 
   // Comprueba que el asistente no supera el máximo de entradas por evento,
   // sumando lo que ya tiene comprado y lo que lleva en el carrito
-  private function comprobarLimitePorEvento(Carrito $carrito, $tipos, string $idUsuario): void {
+  private function comprobarLimitePorEvento(array $lineas, $tipos, string $idUsuario): void {
     $maximo = config('butaka.max_entradas_por_evento');
     $porEvento = [];
 
-    // Se agrupan las líneas del carrito por evento, sumando sus cantidades
-    foreach ($carrito->detalleCarritos as $detalle) {
+    // Se agrupan las líneas por evento, sumando sus cantidades
+    foreach ($lineas as $detalle) {
       $idEvento = $tipos[$detalle->id_tipo_entrada]->id_evento;
 
       if (isset($porEvento[$idEvento])) {
@@ -205,10 +229,10 @@ class CompraController extends Controller {
   }
 
   // Suma el importe del carrito con los precios vigentes, aplicando las ofertas
-  private function calcularBruto(Carrito $carrito, $tipos): float {
+  private function calcularBruto(array $lineas, $tipos): float {
     $bruto = 0;
 
-    foreach ($carrito->detalleCarritos as $detalle) {
+    foreach ($lineas as $detalle) {
       $tipo = $tipos[$detalle->id_tipo_entrada];
       $bruto += $this->precioEfectivo($tipo) * $detalle->cantidad;
     }
@@ -251,8 +275,8 @@ class CompraController extends Controller {
   }
 
   // Traslada las líneas del carrito a la compra y reserva el aforo
-  private function generarDetalleCompra(Compra $compra, Carrito $carrito, $tipos): void {
-    foreach ($carrito->detalleCarritos as $detalle) {
+  private function generarDetalleCompra(Compra $compra, array $lineas, $tipos): void {
+    foreach ($lineas as $detalle) {
       $tipo = $tipos[$detalle->id_tipo_entrada];
 
       DetalleCompra::create([
@@ -263,11 +287,21 @@ class CompraController extends Controller {
       ]);
 
       $tipo->increment('vendidas', $detalle->cantidad);
+
+      // La línea desaparece del carrito, ya está comprada. Las de otros eventos
+      // permanecen para pagarse por separado. El borrado se hace con las dos
+      // claves porque la tabla tiene clave compuesta y el modelo no define una
+      DetalleCarrito::where('id_carrito', $detalle->id_carrito)
+        ->where('id_tipo_entrada', $detalle->id_tipo_entrada)
+        ->delete();
     }
   }
 
   private function validarCompra(Request $request) {
     return $request->validate([
+      // Cada compra corresponde a un único evento, así que el carrito se paga
+      // por eventos y no de una vez
+      'id_evento' => 'required|exists:eventos,id_evento',
       'puntos_canjeados' => 'nullable|integer|min:0',
     ]);
   }

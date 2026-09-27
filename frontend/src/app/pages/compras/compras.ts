@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CompraService } from '../../core/services/compra.service';
+import { CarritoService } from '../../core/services/carrito.service';
 import { Compra } from '../../core/models/compra.model';
 import { ESTADO_PAGO_COMPLETADO, ESTADO_PAGO_PENDIENTE } from '../../core/models/estado-pago.model';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -46,6 +47,7 @@ export class Compras {
 
   constructor(
     private compraService: CompraService,
+    private carritoService: CarritoService,
     private route: ActivatedRoute,
     private router: Router,
     private snackBar: MatSnackBar
@@ -84,6 +86,9 @@ export class Compras {
         // El detalle guardado es el de antes de pagar, así que se descarta
         this.detalles.set({});
         this.cargarCompras();
+        // El carrito se leyó al arrancar la aplicación, antes de confirmar el
+        // pago, así que puede haber quedado desfasado
+        this.carritoService.cargarCarrito();
         this.limpiarParametros();
       },
       error: (err) => {
@@ -160,7 +165,9 @@ export class Compras {
   }
 
   /**
-   * Resumen de una compra para la cabecera del panel, sin desplegarlo
+   * Nombre del evento de la compra, para la cabecera del panel sin desplegar.
+   * Una compra corresponde a un único evento, aunque incluya varios tipos de
+   * entrada, así que basta con mirar la primera línea
    * @param compra
    * @returns
    */
@@ -169,14 +176,7 @@ export class Compras {
       return '';
     }
 
-    const primero = compra.detalle_compras[0].tipo_entrada?.evento?.nombre ?? '';
-    const otros = compra.detalle_compras.length - 1;
-
-    if (otros === 0) {
-      return primero;
-    }
-
-    return `${primero} y ${otros} más`;
+    return compra.detalle_compras[0].tipo_entrada?.evento?.nombre ?? '';
   }
 
   cambiarPagina(pagina: number) {

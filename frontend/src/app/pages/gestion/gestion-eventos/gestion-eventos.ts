@@ -67,6 +67,26 @@ export class GestionEventos {
   }
 
   /**
+   * Entradas colocadas del evento, sumando todos sus tipos de entrada. Decide
+   * si el evento puede eliminarse o si hay que cancelarlo
+   * @param evento
+   * @returns
+   */
+  vendidas(evento: Evento): number {
+    if (!evento.tipo_entradas) {
+      return 0;
+    }
+
+    let total = 0;
+
+    for (const tipo of evento.tipo_entradas) {
+      total = total + tipo.vendidas;
+    }
+
+    return total;
+  }
+
+  /**
    * Entradas vendidas y aforo total del evento, sumando sus modalidades. Sirve
    * para ver de un vistazo cómo va cada evento sin entrar en sus ventas
    * @param evento
@@ -165,6 +185,56 @@ export class GestionEventos {
         }
       });
     });
+  }
+
+  /**
+   * Cancela el evento previa confirmación. A diferencia de eliminarlo, aquí hay
+   * dinero de por medio, así que el aviso lo deja claro
+   * @param evento
+   */
+  cancelarEvento(evento: Evento) {
+    const referencia = this.dialog.open(DialogoConfirmacion, {
+      data: {
+        titulo: 'Cancelar evento',
+        mensaje: `Se devolverá el importe de las entradas vendidas de "${evento.nombre}" y se avisará por correo a los asistentes. Esta acción no se puede deshacer.`,
+        textoBoton: 'Cancelar evento'
+      }
+    });
+
+    referencia.afterClosed().subscribe(confirmado => {
+      if (!confirmado) {
+        return;
+      }
+
+      this.eventoService.cancelarEvento(evento.id_evento).subscribe({
+        next: (respuesta) => {
+          this.avisarDeLaCancelacion(respuesta.data.compras_anuladas, respuesta.data.compras_con_incidencia);
+          this.cargarEventos();
+        },
+        error: (err) => {
+          this.snackBar.open(err.error?.message ?? 'No se pudo cancelar el evento', 'Cerrar', { duration: 4000 });
+        }
+      });
+    });
+  }
+
+  /**
+   * Informa del resultado. Si alguna devolución falló, el organizador tiene que
+   * saberlo para revisarla en Stripe
+   * @param anuladas
+   * @param incidencias
+   */
+  private avisarDeLaCancelacion(anuladas: number, incidencias: string[]) {
+    if (incidencias.length > 0) {
+      this.snackBar.open(
+        `Evento cancelado. ${anuladas} compras devueltas, pero ${incidencias.length} no se pudieron reembolsar y hay que revisarlas`,
+        'Cerrar',
+        { duration: 8000 }
+      );
+      return;
+    }
+
+    this.snackBar.open(`Evento cancelado y ${anuladas} compras devueltas`, 'Cerrar', { duration: 5000 });
   }
 
   verVentas(evento: Evento) {

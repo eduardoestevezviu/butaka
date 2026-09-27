@@ -20,6 +20,16 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+// Las entradas del carrito que pertenecen a un mismo evento, que es lo que se
+// paga de una vez: cada compra corresponde a un único evento
+interface GrupoEvento {
+  idEvento: string;
+  nombre: string;
+  fecha: string;
+  lineas: DetalleCarrito[];
+  subtotal: number;
+}
+
 @Component({
   selector: 'app-carrito',
   standalone: true,
@@ -41,49 +51,49 @@ export class Carrito {
   // Puntos disponibles del asistente. Se piden al perfil y no se leen del
   // navegador, porque el saldo cambia con cada compra
   puntosDisponibles = signal(0);
-  puntosACanjear = signal(0);
-  procesando = signal(false);
+
+  // Puntos que se quieren canjear en cada evento, indexados por su identificador
+  puntosPorEvento = signal<Record<string, number>>({});
+
+  // Evento cuya compra se está tramitando, para bloquear solo su botón
+  procesando = signal<string | null>(null);
+
   minimoCanje = MIN_PUNTOS_CANJE;
 
-  // Las líneas salen de la señal del servicio, así que la pantalla se actualiza
-  // sola cuando se cambia una cantidad o se quita una entrada
-  lineas = computed<DetalleCarrito[]>(() => {
+  grupos = computed<GrupoEvento[]>(() => {
     const carrito = this.carritoService.carritoActual();
 
     if (!carrito || !carrito.detalle_carritos) {
       return [];
     }
 
-    return carrito.detalle_carritos;
-  });
+    const grupos: GrupoEvento[] = [];
 
-  subtotal = computed(() => {
-    let total = 0;
+    for (const linea of carrito.detalle_carritos) {
+      const evento = linea.tipo_entrada?.evento;
 
-    for (const linea of this.lineas()) {
-      total = total + Number(linea.precio_unitario) * linea.cantidad;
+      if (!evento) {
+        continue;
+      }
+
+      let grupo = grupos.find(g => g.idEvento === evento.id_evento);
+
+      if (!grupo) {
+        grupo = {
+          idEvento: evento.id_evento,
+          nombre: evento.nombre,
+          fecha: evento.fecha,
+          lineas: [],
+          subtotal: 0
+        };
+        grupos.push(grupo);
+      }
+
+      grupo.lineas.push(linea);
+      grupo.subtotal = grupo.subtotal + Number(linea.precio_unitario) * linea.cantidad;
     }
 
-    return total;
-  });
-
-  // Descuento que suponen los puntos elegidos
-  descuento = computed(() => {
-    return this.puntosACanjear() / PUNTOS_POR_EURO_CANJE;
-  });
-
-  total = computed(() => {
-    return this.subtotal() - this.descuento();
-  });
-
-  // Puntos que como mucho se pueden canjear en esta compra: ni más de los que
-  // se tienen, ni más de los que cubren la mitad del importe
-  maximoCanjeable = computed(() => {
-    const topePorImporte = Math.floor(
-      this.subtotal() * MAX_PORCENTAJE_CANJE / 100 * PUNTOS_POR_EURO_CANJE
-    );
-
-    return Math.min(this.puntosDisponibles(), topePorImporte);
+    return grupos;
   });
 
   constructor(
@@ -104,6 +114,43 @@ export class Carrito {
       next: (respuesta) => this.puntosDisponibles.set(respuesta.data?.asistente?.puntos ?? 0),
       error: () => this.puntosDisponibles.set(0)
     });
+  }
+
+  puntosDe(grupo: GrupoEvento): number {
+    return this.puntosPorEvento()[grupo.idEvento] ?? 0;
+  }
+
+  descuento(grupo: GrupoEvento): number {
+    return this.puntosDe(grupo) / PUNTOS_POR_EURO_CANJE;
+  }
+
+  total(grupo: GrupoEvento): number {
+    return grupo.subtotal - this.descuento(grupo);
+  }
+
+  /**
+   * Puntos que como mucho se pueden canjear en este evento: ni más de los que
+   * se tienen, ni más de los que cubren la mitad de su importe
+   * @param grupo
+   * @returns
+   */
+  maximoCanjeable(grupo: GrupoEvento): number {
+    const topePorImporte = Math.floor(
+      grupo.subtotal * MAX_PORCENTAJE_CANJE / 100 * PUNTOS_POR_EURO_CANJE
+    );
+
+    return Math.min(this.puntosDisponibles(), topePorImporte);
+  }
+
+  cambiarPuntos(grupo: GrupoEvento, valor: string) {
+    const puntos = Number(valor);
+    let elegidos = 0;
+
+    if (!isNaN(puntos) && puntos > 0) {
+      elegidos = Math.min(puntos, this.maximoCanjeable(grupo));
+    }
+
+    this.puntosPorEvento.set({ ...this.puntosPorEvento(), [grupo.idEvento]: elegidos });
   }
 
   /**
@@ -152,35 +199,24 @@ export class Carrito {
     });
   }
 
-  cambiarPuntos(valor: string) {
-    const puntos = Number(valor);
-
-    if (isNaN(puntos) || puntos < 0) {
-      this.puntosACanjear.set(0);
-      return;
-    }
-
-    this.puntosACanjear.set(Math.min(puntos, this.maximoCanjeable()));
-  }
-
   /**
-   * Convierte el carrito en una compra y lleva directamente a la pasarela de
-   * pago. El importe lo recalcula el backend con los precios vigentes, aquí
-   * solo viajan los puntos a canjear
+   * Compra las entradas de un evento y lleva a la pasarela de pago. Las de los
+   * demás eventos siguen en el carrito para pagarse por separado
+   * @param grupo
    */
-  comprar() {
-    this.procesando.set(true);
+  comprar(grupo: GrupoEvento) {
+    this.procesando.set(grupo.idEvento);
 
     this.compraService.crearCompra({
-      puntos_canjeados: this.puntosACanjear()
+      id_evento: grupo.idEvento,
+      puntos_canjeados: this.puntosDe(grupo)
     }).subscribe({
       next: (respuesta) => {
-        // El carrito ya está convertido, así que se refresca el contador
         this.carritoService.cargarCarrito();
         this.irAPagar(respuesta.data.id_compra);
       },
       error: (err) => {
-        this.procesando.set(false);
+        this.procesando.set(null);
         this.snackBar.open(err.error?.message ?? 'No se pudo completar la compra', 'Cerrar', { duration: 5000 });
       }
     });
@@ -198,7 +234,7 @@ export class Carrito {
         window.location.href = respuesta.data.url;
       },
       error: () => {
-        this.procesando.set(false);
+        this.procesando.set(null);
         this.snackBar.open('Tu compra se ha registrado, pero no se pudo abrir el pago. Puedes pagarla desde Mis compras', 'Cerrar', { duration: 6000 });
         this.router.navigate(['/compras']);
       }

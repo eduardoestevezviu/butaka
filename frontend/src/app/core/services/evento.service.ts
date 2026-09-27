@@ -77,6 +77,16 @@ export class EventoService {
     return this.http.put<ApiResponse<Evento>>(`${this.apiUrl}/${id}`, datos);
   }
 
+  /**
+   * Cancela el evento: devuelve el importe de las compras pagadas, restituye
+   * los puntos y avisa por correo a los asistentes
+   * @param id
+   * @returns
+   */
+  cancelarEvento(id: string): Observable<ApiResponse<{ compras_anuladas: number; compras_con_incidencia: string[] }>> {
+    return this.http.post<ApiResponse<{ compras_anuladas: number; compras_con_incidencia: string[] }>>(`${this.apiUrl}/${id}/cancelar`, {});
+  }
+
   eliminarEvento(id: string): Observable<ApiResponse<null>> {
     return this.http.delete<ApiResponse<null>>(`${this.apiUrl}/${id}`);
   }
