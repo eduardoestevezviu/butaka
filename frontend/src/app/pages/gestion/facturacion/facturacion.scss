@@ -1,0 +1,63 @@
+.facturacion-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.filtro {
+  width: 260px;
+  max-width: 100%;
+}
+
+// Los tres totales del periodo consultado
+.resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  .dato mat-card-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cifra {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .etiqueta {
+    font-size: 0.85rem;
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  // El neto es el dato que de verdad le interesa al organizador
+  .destacado .cifra {
+    color: var(--mat-sys-primary);
+  }
+}
+
+table {
+  width: 100%;
+}
+
+.porcentaje {
+  font-size: 0.8rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.vacio {
+  padding: 2rem 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.error-message {
+  padding: 2rem 0;
+  color: var(--mat-sys-error);
+}

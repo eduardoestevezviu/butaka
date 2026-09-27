@@ -1,1 +1,87 @@
-<p>ventas works!</p>
+<div class="ventas-container">
+
+  <button mat-button (click)="volver()">
+    <mat-icon>arrow_back</mat-icon>
+    Volver a mis eventos
+  </button>
+
+  @if (cargando()) {
+    <div class="spinner-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  @if (!cargando() && ventas(); as datos) {
+    <h1>{{ datos.nombre }}</h1>
+    <p class="fecha">{{ datos.fecha | date:'EEEE d MMMM y, HH:mm' }}</p>
+
+    <!-- Resumen del evento completo -->
+    <div class="resumen">
+      <mat-card class="dato">
+        <mat-card-content>
+          <span class="cifra">{{ datos.totales.vendidas }}</span>
+          <span class="etiqueta">entradas vendidas</span>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="dato">
+        <mat-card-content>
+          <span class="cifra">{{ datos.totales.disponibles }}</span>
+          <span class="etiqueta">disponibles de {{ datos.totales.aforo }}</span>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="dato">
+        <mat-card-content>
+          <span class="cifra">{{ datos.totales.recaudacion | currency:'EUR' }}</span>
+          <span class="etiqueta">recaudación bruta</span>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Desglose por tipo de entrada -->
+    <mat-card>
+      <mat-card-content>
+        <table mat-table [dataSource]="datos.modalidades">
+
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef>Entrada</th>
+            <td mat-cell *matCellDef="let fila">{{ fila.nombre }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="aforo">
+            <th mat-header-cell *matHeaderCellDef>Aforo</th>
+            <td mat-cell *matCellDef="let fila">{{ fila.aforo }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="vendidas">
+            <th mat-header-cell *matHeaderCellDef>Vendidas</th>
+            <td mat-cell *matCellDef="let fila">{{ fila.vendidas }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="pendientes">
+            <th mat-header-cell *matHeaderCellDef>Pendientes de pago</th>
+            <td mat-cell *matCellDef="let fila">{{ fila.pendientes }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="disponibles">
+            <th mat-header-cell *matHeaderCellDef>Disponibles</th>
+            <td mat-cell *matCellDef="let fila">{{ fila.disponibles }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="recaudacion">
+            <th mat-header-cell *matHeaderCellDef>Recaudación</th>
+            <td mat-cell *matCellDef="let fila">{{ fila.recaudacion | currency:'EUR' }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+          <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

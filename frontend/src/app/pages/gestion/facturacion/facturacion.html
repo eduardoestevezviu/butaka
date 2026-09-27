@@ -1,1 +1,102 @@
-<p>facturacion works!</p>
+<div class="facturacion-container">
+  <h1>Facturación</h1>
+
+  @if (cargando()) {
+    <div class="spinner-container">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="error-message">{{ error() }}</p>
+  }
+
+  @if (!cargando() && facturacion(); as datos) {
+
+    @if (datos.liquidaciones.length === 0 && eventoSeleccionado() === null) {
+      <p class="vacio">
+        Todavía no tienes ninguna liquidación. Se emite una por evento cuando este finaliza.
+      </p>
+    } @else {
+
+      <!-- Filtro por evento -->
+      <mat-form-field appearance="outline" class="filtro">
+        <mat-label>Evento</mat-label>
+        <mat-select [value]="eventoSeleccionado()" (selectionChange)="filtrar($event.value)">
+          <mat-option [value]="null">Todos</mat-option>
+          @for (evento of eventosLiquidados(); track evento.id) {
+            <mat-option [value]="evento.id">{{ evento.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Totales del periodo consultado -->
+      <div class="resumen">
+        <mat-card class="dato">
+          <mat-card-content>
+            <span class="cifra">{{ datos.totales.importe_bruto | currency:'EUR' }}</span>
+            <span class="etiqueta">recaudado</span>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="dato">
+          <mat-card-content>
+            <span class="cifra">{{ datos.totales.comision | currency:'EUR' }}</span>
+            <span class="etiqueta">comisión de Butaka, IVA incluido</span>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="dato destacado">
+          <mat-card-content>
+            <span class="cifra">{{ datos.totales.neto | currency:'EUR' }}</span>
+            <span class="etiqueta">a percibir</span>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <!-- Liquidaciones -->
+      <mat-card>
+        <mat-card-content>
+          <table mat-table [dataSource]="datos.liquidaciones">
+
+            <ng-container matColumnDef="numero_factura">
+              <th mat-header-cell *matHeaderCellDef>Factura</th>
+              <td mat-cell *matCellDef="let fila">{{ fila.numero_factura }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="fecha_emision">
+              <th mat-header-cell *matHeaderCellDef>Fecha</th>
+              <td mat-cell *matCellDef="let fila">{{ fila.fecha_emision | date:'dd/MM/yyyy' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="evento">
+              <th mat-header-cell *matHeaderCellDef>Evento</th>
+              <td mat-cell *matCellDef="let fila">{{ fila.evento?.nombre }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="importe_bruto">
+              <th mat-header-cell *matHeaderCellDef>Bruto</th>
+              <td mat-cell *matCellDef="let fila">{{ fila.importe_bruto | currency:'EUR' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="comision">
+              <th mat-header-cell *matHeaderCellDef>Comisión</th>
+              <td mat-cell *matCellDef="let fila">
+                {{ fila.total_comision | currency:'EUR' }}
+                <span class="porcentaje">({{ fila.porcentaje_comision }} %)</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="neto">
+              <th mat-header-cell *matHeaderCellDef>Neto</th>
+              <td mat-cell *matCellDef="let fila">{{ fila.neto | currency:'EUR' }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+            <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+    }
+  }
+</div>
