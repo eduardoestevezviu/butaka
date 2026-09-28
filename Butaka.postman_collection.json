@@ -357,6 +357,29 @@
           "response": []
         },
         {
+          "name": "Eventos destacados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/eventos/destacados",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "eventos",
+                "destacados"
+              ]
+            },
+            "description": "Eventos de los organizadores mejor posicionados en el ranking. Alimenta la banda de destacados del catálogo."
+          },
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "response": []
+        },
+        {
           "name": "Evento",
           "request": {
             "method": "GET",
@@ -1029,7 +1052,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"puntos_canjeados\": 0\n}",
+              "raw": "{\n  \"id_evento\": \"{{id_evento}}\",\n  \"puntos_canjeados\": 0\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1078,7 +1101,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"puntos_canjeados\": 100\n}",
+              "raw": "{\n  \"id_evento\": \"{{id_evento}}\",\n  \"puntos_canjeados\": 100\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1219,6 +1242,200 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Crear compra sin indicar el evento (422)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/compras",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "compras"
+              ]
+            },
+            "description": "El evento es obligatorio, porque cada compra agrupa solo las entradas de uno.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"puntos_canjeados\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pagos",
+      "item": [
+        {
+          "name": "Abrir la pasarela de pago",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pagos/{{id_compra}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pagos",
+                "{{id_compra}}"
+              ]
+            },
+            "description": "Crea la sesión de Stripe y devuelve su dirección. Necesita las claves de Stripe configuradas en el .env. El pago en sí se hace en el navegador, con la tarjeta de prueba 4242 4242 4242 4242.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirmar el pago",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pagos/{{id_compra}}/verificar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pagos",
+                "{{id_compra}}",
+                "verificar"
+              ]
+            },
+            "description": "Comprueba en Stripe que la sesión está pagada, concede los puntos y emite la factura. Es idempotente: repetirla responde que el pago ya estaba confirmado.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Abrir la pasarela de una compra ya pagada (422)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pagos/{{id_compra}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pagos",
+                "{{id_compra}}"
+              ]
+            },
+            "description": "Una compra que ya está completada no vuelve a cobrarse.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Pagar la compra de otro usuario (403)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pagos/{{id_compra}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pagos",
+                "{{id_compra}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirmar un pago sin haber abierto la pasarela (422)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/pagos/{{id_compra_sin_pago}}/verificar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "pagos",
+                "{{id_compra_sin_pago}}",
+                "verificar"
+              ]
+            },
+            "description": "La compra no tiene ninguna sesión de Stripe asociada, así que no hay nada que verificar. Apunta la variable id_compra_sin_pago a una compra pendiente recién creada.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
@@ -1263,7 +1480,13 @@
                 "type": "text/javascript",
                 "exec": [
                   "const res = pm.response.json();",
-                  "pm.collectionVariables.set(\"id_evento_propio\", res.data.data[0].id_evento);"
+                  "pm.collectionVariables.set(\"id_evento_propio\", res.data.data[0].id_evento);",
+                  "",
+                  "// El primer evento cuya fecha ya pasó es el que se puede liquidar",
+                  "const celebrado = res.data.data.find((evento) => new Date(evento.fecha) < new Date());",
+                  "if (celebrado) {",
+                  "  pm.collectionVariables.set(\"id_evento_celebrado\", celebrado.id_evento);",
+                  "}"
                 ]
               }
             }
@@ -1460,6 +1683,67 @@
                 "api",
                 "tipo-entradas",
                 "{{id_tipo_vip}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar evento",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/eventos/{{id_evento_creado}}/cancelar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "eventos",
+                "{{id_evento_creado}}",
+                "cancelar"
+              ]
+            },
+            "description": "Cancela el evento creado en este flujo. Al no tener entradas vendidas no hay reembolsos ni avisos que enviar; con un evento con ventas, devuelve el dinero de cada compra pagada, avisa por correo a los asistentes y vacía el evento de los carritos.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar evento ajeno (403)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/eventos/{{id_evento}}/cancelar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "eventos",
+                "{{id_evento}}",
+                "cancelar"
               ]
             },
             "auth": {
@@ -1751,6 +2035,68 @@
           "response": []
         },
         {
+          "name": "Liquidar un evento celebrado",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/eventos/{{id_evento_celebrado}}/liquidar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "eventos",
+                "{{id_evento_celebrado}}",
+                "liquidar"
+              ]
+            },
+            "description": "Emite la factura de liquidación del evento, con la comisión de Butaka y su IVA del 21%. Con los datos del seeder ese evento ya tiene su liquidación, así que responde 422; para ver la emisión, borra la factura L-20260720-0001 de la base de datos y repite la petición.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Liquidar un evento que todavía no se ha celebrado (422)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/eventos/{{id_evento_propio}}/liquidar",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "eventos",
+                "{{id_evento_propio}}",
+                "liquidar"
+              ]
+            },
+            "description": "La liquidación solo se emite cuando el evento ya ha terminado, porque hasta entonces la recaudación puede cambiar.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Facturación",
           "protocolProfileBehavior": {
             "disableBodyPruning": true
@@ -1935,6 +2281,40 @@
           "response": []
         },
         {
+          "name": "Descargar la factura en PDF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/facturas/{{id_factura}}/pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "facturas",
+                "{{id_factura}}",
+                "pdf"
+              ]
+            },
+            "description": "Devuelve el documento generado con dompdf. En Postman se ve con la pestaña Preview de la respuesta o guardándola en un fichero.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_organizador}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "response": []
+        },
+        {
           "name": "Factura de otro usuario (403)",
           "request": {
             "method": "GET",
@@ -2060,6 +2440,14 @@
     },
     {
       "key": "id_evento_liquidado",
+      "value": ""
+    },
+    {
+      "key": "id_evento_celebrado",
+      "value": ""
+    },
+    {
+      "key": "id_compra_sin_pago",
       "value": ""
     }
   ]

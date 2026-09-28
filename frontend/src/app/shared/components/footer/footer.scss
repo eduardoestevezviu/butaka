@@ -1,12 +1,16 @@
 .footer {
-  padding: 1rem;
+  padding: 1rem 0;
   background-color: var(--mat-sys-surface-container);
   color: var(--mat-sys-on-surface);
   box-sizing: border-box;
 
+  // El mismo ancho que el contenedor de las pantallas, para que la marca del pie
+  // quede en la misma vertical que el contenido de arriba
   .footer-contenido {
-    max-width: 50%;
+    max-width: 1120px;
     margin: 0 auto;
+    padding: 0 1.5rem;
+    box-sizing: border-box;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -44,10 +48,10 @@
   }
 
   .footer-bottom {
+    padding: 0.5rem 1.5rem 0;
     border-top: 1px solid var(--mat-sys-outline-variant);
     margin-top: 0.5rem;
     text-align: center;
     font-size: 0.8rem;
-    padding-top: 0.5rem;
   }
 }

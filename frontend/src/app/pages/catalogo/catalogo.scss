@@ -1,7 +1,42 @@
-.catalogo-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.5rem;
+// Presentación de la portada. Ocupa todo el ancho de la ventana, por eso su fondo
+// va aquí y no en el contenedor de la página, que está limitado a 1120px
+.intro {
+  background-color: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+
+  .intro-contenido {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+    box-sizing: border-box;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 2.4rem;
+    line-height: 1.15;
+  }
+
+  p {
+    margin: 0.75rem 0 1.5rem;
+    max-width: 44rem;
+    font-size: 1.05rem;
+  }
+
+  // El buscador va sobre el fondo de color, así que su caja se pinta clara para
+  // que el texto escrito se lea
+  .buscador {
+    width: 100%;
+    max-width: 30rem;
+    background-color: var(--mat-sys-surface);
+    border-radius: 4px;
+  }
+}
+
+// Encabezado del listado, que dice qué categoría se está viendo
+.titulo-listado {
+  margin: 0 0 1rem;
+  font-size: 1.4rem;
 }
 
 // Banda de destacados
@@ -40,34 +75,39 @@
   }
 }
 
-.filtros {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-
-  mat-form-field {
-    flex: 1 1 240px;
-  }
-}
-
+// El listado es una columna de filas anchas, no una rejilla de tarjetas: en una fila
+// caben la fecha, el sitio, el organizador y el precio sin apretar el texto
 .eventos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .evento-card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1.25rem;
+  padding: 0;
+  overflow: hidden;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  transition: background-color 0.15s ease;
 
   &:hover {
-    transform: translateY(-4px);
+    background-color: var(--mat-sys-surface-container-high);
   }
 
   img {
-    height: 170px;
+    flex: none;
+    width: 260px;
+    height: 160px;
     object-fit: cover;
+  }
+
+  .evento-datos {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 1rem 0;
   }
 
   .categoria {
@@ -78,22 +118,26 @@
 
   h3 {
     margin: 0.3rem 0 0.6rem;
-    font-size: 1.05rem;
+    font-size: 1.15rem;
   }
 
-  // Cada dato lleva su icono delante, alineado con el texto
+  // Cada dato lleva su icono delante. Se alinea con la primera línea y no al centro,
+  // porque las direcciones largas ocupan dos líneas y el icono quedaba a media altura
   .dato {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.35rem;
     margin: 0.2rem 0;
     font-size: 0.85rem;
+    line-height: 1.35;
     color: var(--mat-sys-on-surface-variant);
 
     mat-icon {
+      flex: none;
       font-size: 1.1rem;
       width: 1.1rem;
       height: 1.1rem;
+      line-height: 1.35;
     }
   }
 }

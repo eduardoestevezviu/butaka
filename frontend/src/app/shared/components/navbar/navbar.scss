@@ -1,3 +1,50 @@
+// La barra se queda fija arriba y se separa del contenido con una línea, que antes
+// se confundía con el fondo de la página
+mat-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  padding: 0;
+  background-color: var(--mat-sys-surface-container);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+// El nombre de la plataforma, algo más marcado que el resto de enlaces
+// Enlaces de categoría. La categoría filtrada se subraya para que se vea dónde
+// está uno sin tener que mirar la dirección
+.categorias {
+  display: flex;
+  align-items: center;
+  margin-left: 0.5rem;
+
+  a {
+    font-weight: 400;
+  }
+
+  a.activa {
+    color: var(--mat-sys-primary);
+    font-weight: 600;
+  }
+}
+
+// Se escribe con el elemento delante de la clase porque Material colorea los botones
+// de la barra con una regla más específica, y si no gana ella y el nombre sale en negro
+a.marca {
+  color: var(--mat-sys-primary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
 .spacer {
   flex: 1 1 auto;
 }

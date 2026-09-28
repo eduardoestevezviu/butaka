@@ -1,5 +1,5 @@
-import { Component, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, computed, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { EventoService } from '../../core/services/evento.service';
 import { CategoriaService } from '../../core/services/categoria.service';
@@ -10,7 +10,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
@@ -23,7 +22,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
     MatProgressSpinnerModule
   ],
   templateUrl: './catalogo.html',
@@ -41,16 +39,47 @@ export class Catalogo {
   paginaActual = signal(1);
   totalPaginas = signal(1);
 
+  // Nombre de la categoría filtrada, para encabezar el listado
+  titulo = computed(() => {
+    const filtrada = this.categoria();
+
+    if (filtrada === null) {
+      return 'Todos los eventos';
+    }
+
+    for (const categoria of this.categorias()) {
+      if (categoria.id_categoria === filtrada) {
+        return categoria.categoria;
+      }
+    }
+
+    return 'Todos los eventos';
+  });
+
   constructor(
     private eventoService: EventoService,
     private categoriaService: CategoriaService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit() {
     this.cargarCategorias();
     this.cargarDestacados();
-    this.cargarEventos();
+
+    // La categoría viaja en la dirección, puesta por los enlaces de la barra. Al
+    // escucharla aquí, el catálogo se recarga sin que la barra tenga que hablar con
+    // él, y el enlace filtrado se puede compartir o recargar
+    this.route.queryParams.subscribe((parametros) => {
+      if (parametros['categoria']) {
+        this.categoria.set(Number(parametros['categoria']));
+      } else {
+        this.categoria.set(null);
+      }
+
+      this.paginaActual.set(1);
+      this.cargarEventos();
+    });
   }
 
   /**
@@ -66,8 +95,8 @@ export class Catalogo {
   }
 
   /**
-   * Carga el desplegable de categorías. El servicio las guarda en caché, así
-   * que al volver al catálogo no se vuelve a pedir
+   * Carga las categorías. Solo se usan para poner el nombre de la que esté
+   * filtrada encima del listado, porque los enlaces viven en la barra
    */
   cargarCategorias() {
     this.categoriaService.getCategorias().subscribe({

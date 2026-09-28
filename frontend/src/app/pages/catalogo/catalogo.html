@@ -1,7 +1,26 @@
-<div class="catalogo-container">
+<!-- Presentación de la plataforma, con el buscador dentro -->
+<section class="intro">
+  <div class="intro-contenido">
+    <h1>Encuentra tu próximo evento</h1>
+    <p>Conciertos, teatro, danza, exposiciones y talleres. Compra tus entradas y
+      acumula puntos con cada compra.</p>
 
-  <!-- Banda de destacados. Solo aparece si hay organizadores posicionados -->
-  @if (destacados().length > 0) {
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="buscador">
+      <mat-label>Buscar eventos</mat-label>
+      <input matInput [value]="buscar()" (input)="buscar.set($any($event.target).value)" (keyup.enter)="onFiltrar()">
+      <button mat-icon-button matSuffix (click)="onFiltrar()">
+        <mat-icon>search</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+</section>
+
+<div class="pagina catalogo-container">
+
+  <!-- Banda de destacados. Solo aparece en la portada, porque al entrar en una
+       categoría el usuario ya ha dicho qué busca, y solo si hay organizadores
+       posicionados de los que sacarla -->
+  @if (destacados().length > 0 && categoria() === null) {
     <section class="destacados">
       <h2>Destacados</h2>
       <div class="destacados-fila">
@@ -18,27 +37,6 @@
       </div>
     </section>
   }
-
-  <!-- Buscador y filtro por categoría -->
-  <div class="filtros">
-    <mat-form-field appearance="outline">
-      <mat-label>Buscar eventos</mat-label>
-      <input matInput [value]="buscar()" (input)="buscar.set($any($event.target).value)" (keyup.enter)="onFiltrar()">
-      <button mat-icon-button matSuffix (click)="onFiltrar()">
-        <mat-icon>search</mat-icon>
-      </button>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline">
-      <mat-label>Categoría</mat-label>
-      <mat-select [value]="categoria()" (selectionChange)="categoria.set($event.value); onFiltrar()">
-        <mat-option [value]="null">Todas</mat-option>
-        @for (c of categorias(); track c.id_categoria) {
-          <mat-option [value]="c.id_categoria">{{ c.categoria }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
-  </div>
 
   <!-- Spinner cargando -->
   @if (cargando()) {
@@ -57,17 +55,20 @@
     @if (eventos().length === 0) {
       <p class="sin-resultados">No se encontraron eventos</p>
     } @else {
+      <h2 class="titulo-listado">{{ titulo() }}</h2>
+
       <div class="eventos-grid">
         @for (evento of eventos(); track evento.id_evento) {
           <mat-card class="evento-card" (click)="verDetalle(evento)">
-            <img mat-card-image [src]="evento.imagen_url" [alt]="evento.nombre">
+            <img [src]="evento.imagen_url" [alt]="evento.nombre">
 
-            <mat-card-content>
+            <div class="evento-datos">
               <span class="categoria">{{ evento.categoria?.categoria }}</span>
               <h3>{{ evento.nombre }}</h3>
               <p class="dato"><mat-icon>event</mat-icon> {{ evento.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
               <p class="dato"><mat-icon>location_on</mat-icon> {{ evento.ubicacion }}</p>
-            </mat-card-content>
+              <p class="dato"><mat-icon>storefront</mat-icon> {{ evento.organizador?.nombre_comercial }}</p>
+            </div>
           </mat-card>
         }
       </div>

@@ -1,8 +1,10 @@
-import { Component, computed } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, computed, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CurrencyPipe } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { CarritoService } from '../../../core/services/carrito.service';
+import { CategoriaService } from '../../../core/services/categoria.service';
+import { Categoria } from '../../../core/models/categoria.model';
 import { DetalleCarrito } from '../../../core/models/detalle-carrito.model';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -28,6 +30,14 @@ import { MatDividerModule } from '@angular/material/divider';
   styleUrl: './navbar.scss',
 })
 export class Navbar {
+  // Categorías que se muestran en la barra. El servicio las guarda en caché, así
+  // que solo se piden una vez por sesión aunque la barra viva en todas las pantallas
+  categorias = signal<Categoria[]>([]);
+
+  // Categoría que el catálogo tiene filtrada, para marcarla en la barra. Se lee de
+  // la dirección, no de un estado propio, así sigue siendo correcta al recargar
+  categoriaActiva = signal<number | null>(null);
+
   // Líneas del carrito para la previsualización. Llega vacío mientras no haya
   // carrito, así la plantilla no tiene que comprobar nulos
   lineas = computed<DetalleCarrito[]>(() => {
@@ -67,8 +77,28 @@ export class Navbar {
   constructor(
     public authService: AuthService,
     private carritoService: CarritoService,
-    private router: Router
+    private categoriaService: CategoriaService,
+    private router: Router,
+    private route: ActivatedRoute
   ) { }
+
+  ngOnInit() {
+    this.categoriaService.getCategorias().subscribe({
+      next: (respuesta) => this.categorias.set(respuesta.data),
+      // Si fallan, la barra se queda sin los enlaces pero el resto sigue funcionando
+      error: () => this.categorias.set([])
+    });
+
+    // La barra no se destruye al navegar, de modo que hay que estar pendiente de los
+    // cambios de la dirección para saber qué categoría hay que resaltar
+    this.route.queryParams.subscribe((parametros) => {
+      if (parametros['categoria']) {
+        this.categoriaActiva.set(Number(parametros['categoria']));
+      } else {
+        this.categoriaActiva.set(null);
+      }
+    });
+  }
 
   /**
    * Importe de una línea, para mostrarlo en la previsualización

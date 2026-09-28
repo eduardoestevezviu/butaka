@@ -1,4 +1,4 @@
-<div class="evento-container">
+<div class="pagina evento-container">
 
   <!-- Spinner cargando -->
   @if (cargando()) {
@@ -22,7 +22,7 @@
         <span class="categoria">{{ ficha.categoria?.categoria }}</span>
         <h1>{{ ficha.nombre }}</h1>
 
-        <p class="dato"><mat-icon>event</mat-icon> {{ ficha.fecha | date:'EEEE d MMMM y, HH:mm' }}</p>
+        <p class="dato"><mat-icon>event</mat-icon> {{ ficha.fecha | date:"EEEE d 'de' MMMM 'de' y, HH:mm" }}</p>
         <p class="dato"><mat-icon>location_on</mat-icon> {{ ficha.ubicacion }}</p>
         <p class="dato"><mat-icon>storefront</mat-icon> {{ ficha.organizador?.nombre_comercial }}</p>
 
@@ -58,7 +58,7 @@
                   <p class="quedan">Quedan {{ disponibles(tipo) }}</p>
 
                   <div class="entrada-compra">
-                    <mat-form-field appearance="outline">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
                       <mat-label>Cantidad</mat-label>
                       <mat-select [value]="cantidadDe(tipo)" (selectionChange)="cambiarCantidad(tipo, $event.value)">
                         @for (n of opcionesCantidad(tipo); track n) {
