@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\CompraMail;
 use App\Models\Compra;
 use App\Models\EstadoEvento;
 use App\Models\EstadoPago;
@@ -9,6 +10,7 @@ use App\Http\Responses\ResultResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Stripe\Checkout\Session;
 use Stripe\Refund;
 use Stripe\Stripe;
@@ -174,6 +176,20 @@ class PagoController extends Controller {
 
         app(FacturaController::class)->emitirDeCompra($compra);
       });
+
+      // El aviso se envía solo aquí, en el paso de pendiente a pagada. Si el asistente
+      // recarga la pantalla de vuelta de la pasarela, la respuesta sale antes por la
+      // rama idempotente y no se reenvía.
+      // Va fuera de la transacción porque enviar es una llamada de red, y en su propio
+      // try porque un fallo del servidor de correo no puede deshacer un pago ya cobrado
+      try {
+        $compra->load('detalleCompras.tipoEntrada.evento');
+        $evento = $compra->detalleCompras->first()->tipoEntrada->evento;
+
+        Mail::to($request->user()->email)->send(new CompraMail($request->user(), $compra, $evento));
+      } catch (\Exception $e) {
+        // La compra está pagada igualmente, el correo es solo un aviso
+      }
 
       $result->setStatusCode(ResultResponse::HTTP_OK);
       $result->setMessage('Pago confirmado correctamente');
