@@ -5,6 +5,7 @@ import { EventoService } from '../../../core/services/evento.service';
 import { CategoriaService } from '../../../core/services/categoria.service';
 import { Evento } from '../../../core/models/evento.model';
 import { Categoria } from '../../../core/models/categoria.model';
+import { IMAGEN_POR_DEFECTO } from '../../../core/butaka.config';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -96,7 +97,9 @@ export class DialogoEvento {
       descripcion: evento.descripcion ?? '',
       ubicacion: evento.ubicacion,
       fecha: this.formatearFecha(evento.fecha),
-      imagen: evento.imagen,
+      // Si el evento conserva la imagen por defecto, el campo se deja vacío: es un
+      // valor que pone la base de datos, no algo que el organizador haya escrito
+      imagen: evento.imagen === IMAGEN_POR_DEFECTO ? '' : evento.imagen,
       id_categoria: evento.id_categoria,
     });
   }

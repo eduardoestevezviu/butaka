@@ -14,3 +14,7 @@ export const MAX_ENTRADAS_POR_EVENTO = 6;
 export const PUNTOS_POR_EURO_CANJE = 20;
 export const MIN_PUNTOS_CANJE = 100;
 export const MAX_PORCENTAJE_CANJE = 50;
+
+// Imagen que la base de datos asigna a un evento cuando el organizador no aporta
+// ninguna. El formulario la reconoce para no mostrarle una ruta que él no escribió
+export const IMAGEN_POR_DEFECTO = 'img/evento-por-defecto.jpg';
