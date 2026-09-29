@@ -35,6 +35,17 @@ export class CompraService {
   }
 
   /**
+   * Descarga el PDF con las entradas de una compra pagada. Se pide como binario
+   * porque la respuesta no es JSON, y con HttpClient en lugar de un enlace
+   * normal para que el interceptor pueda añadirle el token
+   * @param id
+   * @returns
+   */
+  descargarEntradas(id: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/entradas`, { responseType: 'blob' });
+  }
+
+  /**
    * Abre la pasarela de pago para una compra pendiente. Devuelve la dirección
    * de Stripe a la que hay que llevar al navegador
    * @param id

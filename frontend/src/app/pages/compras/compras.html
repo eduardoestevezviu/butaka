@@ -74,6 +74,18 @@
                   </div>
                 }
 
+                <!-- Las entradas solo existen una vez pagada la compra -->
+                @if (compra.id_estado_pago === estadoCompletado && detalle.factura) {
+                  <div class="entradas">
+                    <span>Tus entradas</span>
+                    <button mat-flat-button color="primary"
+                            (click)="descargarEntradas(compra.id_compra, detalle.factura.numero_factura)">
+                      <mat-icon>confirmation_number</mat-icon>
+                      Descargar entradas
+                    </button>
+                  </div>
+                }
+
                 @if (detalle.factura) {
                   <div class="factura">
                     <span>Factura {{ detalle.factura.numero_factura }}</span>

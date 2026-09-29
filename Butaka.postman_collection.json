@@ -1175,6 +1175,74 @@
           "response": []
         },
         {
+          "name": "Descargar las entradas en PDF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/compras/{{id_compra}}/entradas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "compras",
+                "{{id_compra}}",
+                "entradas"
+              ]
+            },
+            "description": "Documento con una entrada por cada unidad adquirida, identificada con su localizador. En Postman se ve con la pestaña Preview de la respuesta o guardándola en un fichero.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "response": []
+        },
+        {
+          "name": "Entradas de una compra sin pagar (409)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/compras/{{id_compra_sin_pago}}/entradas",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "compras",
+                "{{id_compra_sin_pago}}",
+                "entradas"
+              ]
+            },
+            "description": "Solo se emiten las entradas de una compra pagada: una compra pendiente tiene el aforo reservado, pero todavía puede no llegar a pagarse.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_asistente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "response": []
+        },
+        {
           "name": "Compra de otro usuario (403)",
           "request": {
             "method": "GET",

@@ -61,6 +61,9 @@ mat-panel-description {
   padding-top: 0.75rem;
 }
 
+// Descarga de las entradas y de la factura, con la misma disposición que el
+// aviso de pago
+.entradas,
 .factura {
   display: flex;
   align-items: center;

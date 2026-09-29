@@ -13,7 +13,9 @@ use App\Models\TipoEntrada;
 use App\Http\Responses\ResultResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CompraController extends Controller {
 
@@ -69,6 +71,75 @@ class CompraController extends Controller {
     }
 
     return $result->toResponse();
+  }
+
+  // Documento con las entradas de una compra. Cada unidad adquirida se imprime
+  // por separado y se identifica con un localizador propio
+  public function entradas(Request $request, Compra $compra): Response|JsonResponse {
+    $result = new ResultResponse();
+    try {
+      // Un asistente solo puede descargar las entradas de sus propias compras
+      if ($compra->id_usuario !== $request->user()->id_usuario) {
+        $result->setStatusCode(ResultResponse::HTTP_FORBIDDEN);
+        $result->setMessage(ResultResponse::MSG_FORBIDDEN);
+        return $result->toResponse();
+      }
+
+      // Solo se emiten las entradas de una compra pagada. Una compra pendiente
+      // tiene el aforo reservado, pero todavía puede no llegar a pagarse, y una
+      // reembolsada ha perdido el derecho de acceso
+      if ($compra->id_estado_pago !== EstadoPago::ESTADO_COMPLETADO) {
+        $result->setStatusCode(ResultResponse::HTTP_CONFLICT);
+        $result->setMessage('La compra no está pagada');
+        return $result->toResponse();
+      }
+
+      $compra->load([
+        'factura:id_factura,id_compra,numero_factura',
+        'detalleCompras.tipoEntrada:id_tipo_entrada,id_evento,nombre',
+        'detalleCompras.tipoEntrada.evento:id_evento,nombre,fecha,ubicacion',
+      ]);
+
+      $pdf = Pdf::loadView('pdf.entradas', [
+        'compra' => $compra,
+        'emisor' => config('butaka.emisor'),
+        // El titular es quien hizo la compra, que es el usuario autenticado, ya
+        // comprobado más arriba
+        'titular' => $request->user()->nombre . ' ' . $request->user()->apellidos,
+        'evento' => $compra->detalleCompras->first()->tipoEntrada->evento,
+        'entradas' => $this->desglosarEntradas($compra),
+      ]);
+
+      return $pdf->download('entradas-' . $compra->factura->numero_factura . '.pdf');
+    } catch (\Exception $e) {
+      $result->setStatusCode(ResultResponse::HTTP_ERROR);
+      $result->setMessage(ResultResponse::MSG_ERROR);
+    }
+
+    return $result->toResponse();
+  }
+
+  // Convierte las líneas de la compra, que guardan una cantidad, en una entrada
+  // por unidad. El localizador se compone del número de factura y un correlativo
+  // dentro de la compra, de modo que identifica cada entrada de forma única
+  private function desglosarEntradas(Compra $compra): array {
+    $entradas = [];
+    $numero = 0;
+
+    // Se recorren las líneas en un orden fijo para que el correlativo que le
+    // corresponde a cada entrada no dependa de cómo las devuelva la consulta
+    foreach ($compra->detalleCompras->sortBy('id_tipo_entrada') as $linea) {
+      for ($unidad = 1; $unidad <= $linea->cantidad; $unidad++) {
+        $numero = $numero + 1;
+
+        $entradas[] = [
+          'localizador' => $compra->factura->numero_factura . '-' . str_pad($numero, 2, '0', STR_PAD_LEFT),
+          'tipo_entrada' => $linea->tipoEntrada->nombre,
+        ];
+      }
+    }
+
+    return $entradas;
   }
 
   // Convierte en una compra pendiente de pago las entradas que el asistente

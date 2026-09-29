@@ -182,29 +182,55 @@ export class Compras {
   }
 
   /**
-   * Descarga el PDF de la factura. El navegador no puede pedirlo con un enlace
-   * porque la ruta exige el token, así que se trae el fichero y se provoca la
-   * descarga con un enlace temporal creado sobre la marcha
+   * Descarga el PDF de la factura de la compra
    * @param idFactura
    * @param numero
    */
   descargarFactura(idFactura: string, numero: string) {
     this.facturaService.descargarPdf(idFactura).subscribe({
       next: (fichero) => {
-        const direccion = URL.createObjectURL(fichero);
-        const enlace = document.createElement('a');
-
-        enlace.href = direccion;
-        enlace.download = `${numero}.pdf`;
-        enlace.click();
-
-        // La dirección temporal ocupa memoria hasta que se libera a mano
-        URL.revokeObjectURL(direccion);
+        this.guardarFichero(fichero, `${numero}.pdf`);
       },
       error: () => {
         this.snackBar.open('No se pudo descargar la factura', 'Cerrar', { duration: 4000 });
       }
     });
+  }
+
+  /**
+   * Descarga el PDF con las entradas de la compra, una por cada unidad adquirida
+   * y con su localizador
+   * @param idCompra
+   * @param numero número de la factura, que da nombre al fichero
+   */
+  descargarEntradas(idCompra: string, numero: string) {
+    this.compraService.descargarEntradas(idCompra).subscribe({
+      next: (fichero) => {
+        this.guardarFichero(fichero, `entradas-${numero}.pdf`);
+      },
+      error: () => {
+        this.snackBar.open('No se pudieron descargar las entradas', 'Cerrar', { duration: 4000 });
+      }
+    });
+  }
+
+  /**
+   * Provoca la descarga de un fichero recibido del backend con un enlace
+   * temporal creado sobre la marcha, ya que no se puede enlazar directamente a
+   * una ruta que exige el token
+   * @param fichero
+   * @param nombre
+   */
+  private guardarFichero(fichero: Blob, nombre: string) {
+    const direccion = URL.createObjectURL(fichero);
+    const enlace = document.createElement('a');
+
+    enlace.href = direccion;
+    enlace.download = nombre;
+    enlace.click();
+
+    // La dirección temporal ocupa memoria hasta que se libera a mano
+    URL.revokeObjectURL(direccion);
   }
 
   cambiarPagina(pagina: number) {

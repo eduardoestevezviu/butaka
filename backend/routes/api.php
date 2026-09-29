@@ -136,6 +136,9 @@ Route::middleware(['auth:api', CheckToken::using('asistente')])->group(function 
     // GET /api/compras/{id} - Detalle de una compra con su factura
     Route::get('/{compra}', 'show');
 
+    // GET /api/compras/{id}/entradas - Descarga de las entradas en PDF
+    Route::get('/{compra}/entradas', 'entradas');
+
     // POST /api/compras - Convertir el carrito activo en una compra pendiente de pago
     Route::post('/', 'store');
   });
