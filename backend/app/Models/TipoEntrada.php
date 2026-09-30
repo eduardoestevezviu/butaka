@@ -32,6 +32,16 @@ class TipoEntrada extends Model {
     return 'id_tipo_entrada';
   }
 
+  // Precio al que se vende realmente la entrada, con la oferta ya aplicada. Vive
+  // en el modelo para que el carrito y la compra calculen siempre de la misma forma
+  public function getPrecioEfectivoAttribute(): float {
+    if (is_null($this->oferta)) {
+      return (float) $this->precio;
+    }
+
+    return round($this->precio * (100 - $this->oferta) / 100, 2);
+  }
+
   // Se utiliza para generar un UUID automáticamente al crear un nuevo tipo de entrada
   protected static function boot() {
     parent::boot();

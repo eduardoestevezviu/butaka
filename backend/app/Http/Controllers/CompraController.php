@@ -305,19 +305,10 @@ class CompraController extends Controller {
 
     foreach ($lineas as $detalle) {
       $tipo = $tipos[$detalle->id_tipo_entrada];
-      $bruto += $this->precioEfectivo($tipo) * $detalle->cantidad;
+      $bruto += $tipo->precio_efectivo * $detalle->cantidad;
     }
 
     return round($bruto, 2);
-  }
-
-  // Precio de venta de un tipo de entrada, ya descontada su oferta
-  private function precioEfectivo(TipoEntrada $tipo): float {
-    if (is_null($tipo->oferta)) {
-      return (float) $tipo->precio;
-    }
-
-    return round($tipo->precio * (100 - $tipo->oferta) / 100, 2);
   }
 
   // Valida el canje y devuelve el descuento en euros que supone
@@ -354,7 +345,7 @@ class CompraController extends Controller {
         'id_compra' => $compra->id_compra,
         'id_tipo_entrada' => $tipo->id_tipo_entrada,
         'cantidad' => $detalle->cantidad,
-        'precio_unitario' => $this->precioEfectivo($tipo),
+        'precio_unitario' => $tipo->precio_efectivo,
       ]);
 
       $tipo->increment('vendidas', $detalle->cantidad);

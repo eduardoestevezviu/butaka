@@ -90,7 +90,7 @@ export class Carrito {
       }
 
       grupo.lineas.push(linea);
-      grupo.subtotal = grupo.subtotal + Number(linea.precio_unitario) * linea.cantidad;
+      grupo.subtotal = grupo.subtotal + this.subtotalLinea(linea);
     }
 
     return grupos;
@@ -176,8 +176,29 @@ export class Carrito {
     return opciones;
   }
 
+  /**
+   * Precio de venta de la línea con la oferta vigente ya aplicada. Se calcula a
+   * partir del tipo de entrada, y no del precio guardado al añadirla, para que lo
+   * que se muestra coincida con lo que la API cobrará al comprar
+   * @param linea
+   * @returns
+   */
+  precioUnitario(linea: DetalleCarrito): number {
+    const tipo = linea.tipo_entrada;
+
+    if (!tipo) {
+      return Number(linea.precio_unitario);
+    }
+
+    if (!tipo.oferta) {
+      return Number(tipo.precio);
+    }
+
+    return Number(tipo.precio) * (100 - tipo.oferta) / 100;
+  }
+
   subtotalLinea(linea: DetalleCarrito): number {
-    return Number(linea.precio_unitario) * linea.cantidad;
+    return this.precioUnitario(linea) * linea.cantidad;
   }
 
   cambiarCantidad(linea: DetalleCarrito, cantidad: number) {

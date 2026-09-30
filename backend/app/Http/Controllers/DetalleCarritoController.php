@@ -63,14 +63,14 @@ class DetalleCarritoController extends Controller {
           ->where('id_tipo_entrada', $datos['id_tipo_entrada'])
           ->update([
             'cantidad' => $datos['cantidad'],
-            'precio_unitario' => $tipoEntrada->precio,
+            'precio_unitario' => $tipoEntrada->precio_efectivo,
           ]);
       } else {
         DetalleCarrito::create([
           'id_carrito' => $carrito->id_carrito,
           'id_tipo_entrada' => $datos['id_tipo_entrada'],
           'cantidad' => $datos['cantidad'],
-          'precio_unitario' => $tipoEntrada->precio,
+          'precio_unitario' => $tipoEntrada->precio_efectivo,
         ]);
       }
 
